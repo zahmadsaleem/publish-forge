@@ -1,11 +1,30 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'publish-forge'
+description: 'GitHub Action to publish an Autodesk Forge App Bundle'
+author: 'zahmadsaleem'
 inputs:
-  milliseconds: # change this
+  client_id:
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+    description: 'Forge Client ID'
+  client_secret:
+    required: true
+    description: 'Forge Client Secret'
+  nickname:
+    required: true
+    description: 'Forge AppBundle nickname'
+  engine:
+    required: true
+    description: 'Forge AppBundle engine'
+  alias:
+    required: false
+    default: 'production'
+    description: 'Forge AppBundle alias'
+  description:
+    required: false
+    description: 'Forge AppBundle description'
+    default: ''
+  bundle_path:
+    required: true
+    description: 'Path to the AppBundle zip file'
 runs:
   using: 'node16'
   main: 'dist/index.js'
