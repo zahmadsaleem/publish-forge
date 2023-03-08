@@ -11,6 +11,9 @@ inputs:
   nickname:
     required: true
     description: 'Forge AppBundle nickname'
+  app_bundle_id:
+    required: true
+    description: 'Forge AppBundle Id/Name'
   engine:
     required: true
     description: 'Forge AppBundle engine'
@@ -25,6 +28,10 @@ inputs:
   bundle_path:
     required: true
     description: 'Path to the AppBundle zip file'
+  activities:
+    required: true
+    description: 'File path selector to the activities json file(s)'
+
 runs:
   using: 'node16'
   main: 'dist/index.js'

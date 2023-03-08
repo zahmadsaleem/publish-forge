@@ -1,38 +1,43 @@
-import {HttpClient} from '@actions/http-client'
-
-const client = new HttpClient()
+import * as glob from '@actions/glob'
+import FormData from 'form-data'
+import axios from 'axios'
+import fs from 'fs'
+import qs from 'qs'
 export interface Inputs {
   clientId: string
   clientSecret: string
   nickname: string
+  appBundleId: string
   appBundleAlias: string
   engine: string
   description: string
   appBundlePath: string
+  activities: string
 }
 
 async function getAccessToken(
   clientId: string,
   clientSecret: string
 ): Promise<string> {
-  const args = {
-    data: {
-      client_id: clientId,
-      client_secret: clientSecret,
-      grant_type: 'client_credentials',
-      scope: 'forge:read forge:write'
+  const data = qs.stringify({
+    client_id: clientId,
+    client_secret: clientSecret,
+    grant_type: 'client_credentials',
+    scope:
+      'code:all data:write data:read bucket:create bucket:delete bucket:update'
+  })
+  const config = {
+    method: 'post',
+    url: 'https://developer.api.autodesk.com/authentication/v1//authenticate',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
     },
-    headers: {'Content-Type': 'application/json'}
+    data
   }
 
-  const result = await client.post(
-    'https://developer.api.autodesk.com/authentication/v1/authenticate',
-    JSON.stringify(args)
-  )
+  const result = await axios(config)
 
-  const resultRaw = await result.readBody()
-  const resultJson = JSON.parse(resultRaw)
-  return resultJson.access_token
+  return result.data.access_token
 }
 
 interface AppBundleUpdateResponse {
@@ -47,40 +52,53 @@ async function updateAppBundle(
   inputs: Inputs,
   accessToken: string
 ): Promise<AppBundleUpdateResponse> {
-  const url = `https://developer.api.autodesk.com/da/us-east/v3/appbundles/${inputs.nickname}/versions`
+  const data = JSON.stringify({
+    engine: inputs.engine,
+    description: inputs.description
+  })
 
-  const args = {
+  const config = {
+    method: 'post',
+    url: `https://developer.api.autodesk.com/da/us-east/v3/${inputs.nickname}/appbundles/${inputs.appBundleId}/versions`,
     headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`
     },
-    data: {
-      engine: inputs.engine,
-      description: inputs.description
-    }
+    data
   }
-  const result = await client.post(url, JSON.stringify(args))
-  const resultRaw = await result.readBody()
-  return JSON.parse(resultRaw)
+
+  const result = await axios(config)
+  return result.data
 }
 
 async function uploadAppBundle(
   zipFilePath: string,
-  formData: any,
+  formData: Record<string, string>,
   uploadUrl: string
 ): Promise<void> {
-  const data = formData
-  data.file = zipFilePath
+  const data = new FormData()
+  data.append('key', formData.key)
+  data.append('content-type', 'application/octet-stream')
+  data.append('policy', formData.policy)
+  data.append('success_action_status', '200')
+  data.append('x-amz-signature', formData['x-amz-signature'])
+  data.append('x-amz-credential', formData['x-amz-credential'])
+  data.append('x-amz-algorithm', formData['x-amz-algorithm'])
+  data.append('x-amz-date', formData['x-amz-date'])
+  data.append('x-amz-server-side-encryption', 'AES256')
+  data.append('x-amz-security-token', formData['x-amz-security-token'])
+  data.append('file', fs.createReadStream(zipFilePath))
 
-  const args = {
+  const config = {
+    method: 'post',
+    url: uploadUrl,
     headers: {
-      'Content-Type': 'multipart/form-data'
+      ...data.getHeaders()
     },
     data
   }
-  /* const result =*/ await client.post(uploadUrl, JSON.stringify(args))
-  // const resultRaw = await result.readBody()
-  // const resultJson = JSON.parse(resultRaw)
+
+  await axios(config)
 
   return
 }
@@ -90,21 +108,46 @@ async function assignAppBundleAlias(
   versionNumber: Number,
   inputs: Inputs
 ): Promise<void> {
-  const url = `https://developer.api.autodesk.com/da/us-east/v3/appbundles/${inputs.nickname}/aliases/${inputs.appBundleAlias}`
-  const args = {
+  const data = {
+    version: versionNumber,
+    id: inputs.appBundleId
+  }
+
+  const config = {
+    method: 'patch',
+    maxBodyLength: Infinity,
+    url: `https://developer.api.autodesk.com/da/us-east/v3/${inputs.nickname}/appbundles/${inputs.appBundleId}/aliases/${inputs.appBundleAlias}`,
     headers: {
       Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json'
     },
-    data: {
-      version: versionNumber,
-      id: inputs.appBundleAlias
-    }
+    data
   }
+  axios(config)
+}
+async function updateActivities(
+  accessToken: string,
+  inputs: Inputs
+): Promise<void> {
+  const globber = await glob.create(inputs.activities)
+  const files = await globber.glob()
 
-  /*const result =*/ await client.put(url, JSON.stringify(args))
-  // const resultRaw = await result.readBody()
-  // const resultJson = JSON.parse(resultRaw)
+  for (const file_path of files) {
+    const activity = fs.readFileSync(file_path, 'utf8')
+    const data = JSON.parse(activity)
+
+    const config = {
+      method: 'patch',
+      maxBodyLength: Infinity,
+      url: `https://developer.api.autodesk.com/da/us-east/v3/activities/${data.activityId}/versions`,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      data: data.payload
+    }
+    await axios(config)
+  }
 }
 
 export async function publish(inputs: Inputs): Promise<void> {
@@ -116,4 +159,6 @@ export async function publish(inputs: Inputs): Promise<void> {
     result.uploadParameters.endpointURL
   )
   await assignAppBundleAlias(accessToken, result.version, inputs)
+
+  await updateActivities(accessToken, inputs)
 }
