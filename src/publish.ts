@@ -3,6 +3,7 @@ import FormData from 'form-data'
 import axios from 'axios'
 import fs from 'fs'
 import qs from 'qs'
+
 export interface Inputs {
   clientId: string
   clientSecret: string
@@ -28,7 +29,7 @@ async function getAccessToken(
   })
   const config = {
     method: 'post',
-    url: 'https://developer.api.autodesk.com/authentication/v1//authenticate',
+    url: 'https://developer.api.autodesk.com/authentication/v1/authenticate',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
     },

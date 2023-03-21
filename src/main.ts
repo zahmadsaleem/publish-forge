@@ -9,6 +9,7 @@ function getInputs(): Inputs {
     appBundleAlias: core.getInput('alias'),
     engine: core.getInput('engine'),
     description: core.getInput('description'),
+    appBundleId: core.getInput('bundle_id'),
     appBundlePath: core.getInput('bundle_path'),
     activities: core.getInput('activities')
   }
