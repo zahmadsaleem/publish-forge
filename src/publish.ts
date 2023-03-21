@@ -10,8 +10,7 @@ export interface Inputs {
   nickname: string
   appBundleId: string
   appBundleAlias: string
-  engine: string
-  description: string
+  appBundleEngine: string
   appBundlePath: string
   activities: string
 }
@@ -54,8 +53,7 @@ async function updateAppBundle(
   accessToken: string
 ): Promise<AppBundleUpdateResponse> {
   const data = JSON.stringify({
-    engine: inputs.engine,
-    description: inputs.description
+    engine: inputs.appBundleEngine
   })
 
   const config = {
@@ -116,7 +114,6 @@ async function assignAppBundleAlias(
 
   const config = {
     method: 'patch',
-    maxBodyLength: Infinity,
     url: `https://developer.api.autodesk.com/da/us-east/v3/${inputs.nickname}/appbundles/${inputs.appBundleId}/aliases/${inputs.appBundleAlias}`,
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -138,14 +135,13 @@ async function updateActivities(
     const data = JSON.parse(activity)
 
     const config = {
-      method: 'patch',
-      maxBodyLength: Infinity,
-      url: `https://developer.api.autodesk.com/da/us-east/v3/activities/${data.activityId}/versions`,
+      method: 'post',
+      url: `https://developer.api.autodesk.com/da/us-east/v3/activities/${data.id}/versions`,
       headers: {
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json'
       },
-      data: data.payload
+      data
     }
     await axios(config)
   }

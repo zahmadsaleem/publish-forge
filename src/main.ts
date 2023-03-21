@@ -6,11 +6,10 @@ function getInputs(): Inputs {
     clientId: core.getInput('client_id'),
     clientSecret: core.getInput('client_secret'),
     nickname: core.getInput('nickname'),
-    appBundleAlias: core.getInput('alias'),
-    engine: core.getInput('engine'),
-    description: core.getInput('description'),
-    appBundleId: core.getInput('bundle_id'),
-    appBundlePath: core.getInput('bundle_path'),
+    appBundleAlias: core.getInput('appbundle_alias'),
+    appBundleEngine: core.getInput('appbundle_engine'),
+    appBundleId: core.getInput('appbundle_id'),
+    appBundlePath: core.getInput('appbundle_path'),
     activities: core.getInput('activities')
   }
 }

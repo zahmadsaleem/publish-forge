@@ -11,21 +11,17 @@ inputs:
   nickname:
     required: true
     description: 'Forge AppBundle nickname'
-  app_bundle_id:
+  appbundle_name:
     required: true
     description: 'Forge AppBundle Id/Name'
-  engine:
+  appbundle_engine:
     required: true
     description: 'Forge AppBundle engine'
-  alias:
+  appbundle_alias:
     required: false
-    default: 'production'
+    default: '$LATEST'
     description: 'Forge AppBundle alias'
-  description:
-    required: false
-    description: 'Forge AppBundle description'
-    default: ''
-  bundle_path:
+  appbundle_path:
     required: true
     description: 'Path to the AppBundle zip file'
   activities:
