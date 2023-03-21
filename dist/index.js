@@ -130,7 +130,7 @@ function getAccessToken(clientId, clientSecret) {
         });
         const config = {
             method: 'post',
-            url: 'https://developer.api.autodesk.com/authentication/v1//authenticate',
+            url: 'https://developer.api.autodesk.com/authentication/v1/authenticate',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
