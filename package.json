@@ -31,7 +31,7 @@
     "qs": "^6.11.1"
   },
   "devDependencies": {
-    "@types/node": "^18.15.5",
+    "@types/node": "^18.15.11",
     "@types/qs": "^6.9.7",
     "@typescript-eslint/eslint-plugin": "^5.56.0",
     "@typescript-eslint/parser": "^5.56.0",
