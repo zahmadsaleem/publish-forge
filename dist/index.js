@@ -46,11 +46,10 @@ function getInputs() {
         clientId: core.getInput('client_id'),
         clientSecret: core.getInput('client_secret'),
         nickname: core.getInput('nickname'),
-        appBundleAlias: core.getInput('alias'),
-        engine: core.getInput('engine'),
-        description: core.getInput('description'),
-        appBundleId: core.getInput('bundle_id'),
-        appBundlePath: core.getInput('bundle_path'),
+        appBundleAlias: core.getInput('appbundle_alias'),
+        appBundleEngine: core.getInput('appbundle_engine'),
+        appBundleId: core.getInput('appbundle_id'),
+        appBundlePath: core.getInput('appbundle_path'),
         activities: core.getInput('activities')
     };
 }
@@ -143,8 +142,7 @@ function getAccessToken(clientId, clientSecret) {
 function updateAppBundle(inputs, accessToken) {
     return __awaiter(this, void 0, void 0, function* () {
         const data = JSON.stringify({
-            engine: inputs.engine,
-            description: inputs.description
+            engine: inputs.appBundleEngine
         });
         const config = {
             method: 'post',
@@ -191,7 +189,6 @@ function assignAppBundleAlias(accessToken, versionNumber, inputs) {
         };
         const config = {
             method: 'patch',
-            maxBodyLength: Infinity,
             url: `https://developer.api.autodesk.com/da/us-east/v3/${inputs.nickname}/appbundles/${inputs.appBundleId}/aliases/${inputs.appBundleAlias}`,
             headers: {
                 Authorization: `Bearer ${accessToken}`,
@@ -210,14 +207,13 @@ function updateActivities(accessToken, inputs) {
             const activity = fs_1.default.readFileSync(file_path, 'utf8');
             const data = JSON.parse(activity);
             const config = {
-                method: 'patch',
-                maxBodyLength: Infinity,
-                url: `https://developer.api.autodesk.com/da/us-east/v3/activities/${data.activityId}/versions`,
+                method: 'post',
+                url: `https://developer.api.autodesk.com/da/us-east/v3/activities/${data.id}/versions`,
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
                     'Content-Type': 'application/json'
                 },
-                data: data.payload
+                data
             };
             yield (0, axios_1.default)(config);
         }
