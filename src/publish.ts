@@ -53,12 +53,13 @@ async function updateAppBundle(
   accessToken: string
 ): Promise<AppBundleUpdateResponse> {
   const data = JSON.stringify({
-    engine: inputs.appBundleEngine
+    engine: inputs.appBundleEngine,
+    description: 'AnkerForge'
   })
 
   const config = {
     method: 'post',
-    url: `https://developer.api.autodesk.com/da/us-east/v3/${inputs.nickname}/appbundles/${inputs.appBundleId}/versions`,
+    url: `https://developer.api.autodesk.com/da/us-east/v3/appbundles/${inputs.appBundleId}/versions`,
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${accessToken}`
@@ -80,6 +81,7 @@ async function uploadAppBundle(
   data.append('content-type', 'application/octet-stream')
   data.append('policy', formData.policy)
   data.append('success_action_status', '200')
+  data.append('success_action_redirect', '')
   data.append('x-amz-signature', formData['x-amz-signature'])
   data.append('x-amz-credential', formData['x-amz-credential'])
   data.append('x-amz-algorithm', formData['x-amz-algorithm'])
@@ -156,6 +158,5 @@ export async function publish(inputs: Inputs): Promise<void> {
     result.uploadParameters.endpointURL
   )
   await assignAppBundleAlias(accessToken, result.version, inputs)
-
   await updateActivities(accessToken, inputs)
 }
