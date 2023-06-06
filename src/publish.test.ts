@@ -1,29 +1,26 @@
-// dummy jest test
-import {test, expect} from '@jest/globals'
+import { test, expect } from "@jest/globals";
 import { publish } from "./publish";
-// load env vars from .env file
-import {config} from 'dotenv'
-config()
+import { config } from "dotenv";
 
+config();
 
-const clientId = process.env.FORGE_CLIENT_ID
-const clientSecret = process.env.FORGE_CLIENT_SECRET
-test('dummy test', async () => {
+const clientId = process.env.FORGE_CLIENT_ID;
+const clientSecret = process.env.FORGE_CLIENT_SECRET;
+test("dummy test", async () => {
   try {
+    await publish({
+      clientId,
+      clientSecret,
+      activities: "./testdata/*.activity.json",
+      appBundleEngine: "Autodesk.Revit+2023",
+      appBundlePath: "./bin/AppBundle.bundle.zip",
+      nickname: "App",
+      appBundleId: "AppBundle",
+      appBundleAlias: "prod"
 
-  await publish({
-    clientId,
-    clientSecret,
-    activities: "",
-    appBundleEngine: "Autodesk.Revit+2023",
-    appBundlePath: "./bin/App.bundle.zip",
-    nickname: 'App',
-    appBundleId: 'AppFeature',
-    appBundleAlias: 'prod'
-
-  })
+    });
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
-  expect(true).toBeTruthy()
-})
+  expect(true).toBeTruthy();
+});

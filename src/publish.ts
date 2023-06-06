@@ -115,15 +115,15 @@ async function assignAppBundleAlias(
   }
 
   const config = {
-    method: 'patch',
-    url: `https://developer.api.autodesk.com/da/us-east/v3/${inputs.nickname}/appbundles/${inputs.appBundleId}/aliases/${inputs.appBundleAlias}`,
+    method: 'post',
+    url: `https://developer.api.autodesk.com/da/us-east/v3/appbundles/${inputs.appBundleId}/aliases`,
     headers: {
       Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json'
     },
     data
   }
-  axios(config)
+  await axios(config)
 }
 async function updateActivities(
   accessToken: string,
@@ -136,15 +136,18 @@ async function updateActivities(
     const activity = fs.readFileSync(file_path, 'utf8')
     const data = JSON.parse(activity)
 
+    const activityName = data.id
+    delete data.id
     const config = {
       method: 'post',
-      url: `https://developer.api.autodesk.com/da/us-east/v3/activities/${data.id}/versions`,
+      url: `https://developer.api.autodesk.com/da/us-east/v3/activities/${activityName}/versions`,
       headers: {
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json'
       },
-      data
+      data: JSON.stringify(data)
     }
+
     await axios(config)
   }
 }

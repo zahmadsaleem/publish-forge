@@ -1,0 +1,23 @@
+{
+  "id": "AppBundleActivity",
+  "commandLine": [ "$(engine.path)\\\\revitcoreconsole.exe /i \"$(args[rvtFile].path)\" /al \"$(appbundles[AppMethod].path)\"" ],
+  "parameters": {
+    "rvtFile": {
+      "zip": false,
+      "ondemand": false,
+      "verb": "get",
+      "description": "Input Revit model",
+      "required": true,
+      "localName": "$(rvtFile)"
+    }
+  },
+  "settings": {
+    "TEST_ENV_VARIABLE": {
+      "value": "Hello World!",
+      "isEnvironmentVariable": true
+    }
+  },
+  "engine": "Autodesk.Revit+2023",
+  "appbundles": [ "AppBundle.AppMethod+prod" ],
+  "description": "Default activity with sync params as JSON."
+}
