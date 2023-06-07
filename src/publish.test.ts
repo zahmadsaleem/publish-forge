@@ -13,7 +13,7 @@ test("dummy test", async () => {
       clientSecret,
       activities: "./testdata/*.activity.json",
       appBundleEngine: "Autodesk.Revit+2023",
-      appBundlePath: "./bin/AppBundle.bundle.zip",
+      appBundlePath: "./testdata/AppBundle.bundle.zip",
       nickname: "App",
       appBundleId: "AppBundle",
       appBundleAlias: "prod"
