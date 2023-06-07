@@ -4,8 +4,8 @@ import { config } from "dotenv";
 
 config();
 
-const clientId = process.env.FORGE_CLIENT_ID;
-const clientSecret = process.env.FORGE_CLIENT_SECRET;
+const clientId = process.env.FORGE_CLIENT_ID as string;
+const clientSecret = process.env.FORGE_CLIENT_SECRET as string;
 test("dummy test", async () => {
   try {
     await publish({

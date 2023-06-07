@@ -142,11 +142,12 @@ function getAccessToken(clientId, clientSecret) {
 function updateAppBundle(inputs, accessToken) {
     return __awaiter(this, void 0, void 0, function* () {
         const data = JSON.stringify({
-            engine: inputs.appBundleEngine
+            engine: inputs.appBundleEngine,
+            description: 'AnkerForge'
         });
         const config = {
             method: 'post',
-            url: `https://developer.api.autodesk.com/da/us-east/v3/${inputs.nickname}/appbundles/${inputs.appBundleId}/versions`,
+            url: `https://developer.api.autodesk.com/da/us-east/v3/appbundles/${inputs.appBundleId}/versions`,
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${accessToken}`
@@ -164,6 +165,7 @@ function uploadAppBundle(zipFilePath, formData, uploadUrl) {
         data.append('content-type', 'application/octet-stream');
         data.append('policy', formData.policy);
         data.append('success_action_status', '200');
+        data.append('success_action_redirect', '');
         data.append('x-amz-signature', formData['x-amz-signature']);
         data.append('x-amz-credential', formData['x-amz-credential']);
         data.append('x-amz-algorithm', formData['x-amz-algorithm']);
@@ -188,15 +190,15 @@ function assignAppBundleAlias(accessToken, versionNumber, inputs) {
             id: inputs.appBundleId
         };
         const config = {
-            method: 'patch',
-            url: `https://developer.api.autodesk.com/da/us-east/v3/${inputs.nickname}/appbundles/${inputs.appBundleId}/aliases/${inputs.appBundleAlias}`,
+            method: 'post',
+            url: `https://developer.api.autodesk.com/da/us-east/v3/appbundles/${inputs.appBundleId}/aliases`,
             headers: {
                 Authorization: `Bearer ${accessToken}`,
                 'Content-Type': 'application/json'
             },
             data
         };
-        (0, axios_1.default)(config);
+        yield (0, axios_1.default)(config);
     });
 }
 function updateActivities(accessToken, inputs) {
@@ -206,14 +208,16 @@ function updateActivities(accessToken, inputs) {
         for (const file_path of files) {
             const activity = fs_1.default.readFileSync(file_path, 'utf8');
             const data = JSON.parse(activity);
+            const activityName = data.id;
+            delete data.id;
             const config = {
                 method: 'post',
-                url: `https://developer.api.autodesk.com/da/us-east/v3/activities/${data.id}/versions`,
+                url: `https://developer.api.autodesk.com/da/us-east/v3/activities/${activityName}/versions`,
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
                     'Content-Type': 'application/json'
                 },
-                data
+                data: JSON.stringify(data)
             };
             yield (0, axios_1.default)(config);
         }
