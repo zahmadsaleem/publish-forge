@@ -184,9 +184,9 @@ function updateAppBundle(inputs, accessToken) {
             // todo: check error
         }
         if (!inputs.create) {
-            throw new Error("AppBundle doesn't exist");
+            throw new Error(`AppBundle ${inputs.appBundleId} doesn't exist`);
         }
-        core.info('AppBundle does not exist, creating...');
+        core.info(`AppBundle ${inputs.appBundleId} does not exist, creating...`);
         const result = yield (0, axios_1.default)(createConfig);
         return result.data;
     });
@@ -249,9 +249,9 @@ function assignAppBundleAlias(accessToken, versionNumber, inputs) {
             // todo: check error
         }
         if (!inputs.create) {
-            throw new Error("AppBundle alias doesn't exist");
+            throw new Error(`AppBundle alias ${inputs.appBundleAlias} doesn't exist`);
         }
-        core.info('AppBundle alias does not exist, creating...');
+        core.info(`AppBundle alias ${inputs.appBundleAlias} does not exist, creating...`);
         yield (0, axios_1.default)(createConfig);
     });
 }
@@ -259,39 +259,48 @@ function updateActivities(accessToken, inputs) {
     return __awaiter(this, void 0, void 0, function* () {
         const globber = yield glob.create(inputs.activities);
         const files = yield globber.glob();
+        for (const file_path of files) {
+            const activity = fs_1.default.readFileSync(file_path, 'utf8');
+            const data = JSON.parse(activity);
+            yield updateActivity(data, inputs.create, accessToken);
+        }
+    });
+}
+function updateActivity(activity, createIfNotExists, accessToken) {
+    return __awaiter(this, void 0, void 0, function* () {
         const headers = {
             Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json'
         };
-        for (const file_path of files) {
-            const activity = fs_1.default.readFileSync(file_path, 'utf8');
-            const data = JSON.parse(activity);
-            const activityName = data.id;
-            // const activityAlias = data.alias
-            // delete data.alias
-            const createConfig = {
-                method: 'post',
-                url: `https://developer.api.autodesk.com/da/us-east/v3/activities`,
-                headers,
-                data: JSON.stringify(data)
-            };
-            delete data.id;
-            const config = {
-                method: 'post',
-                url: `https://developer.api.autodesk.com/da/us-east/v3/activities/${activityName}/versions`,
-                headers,
-                data: JSON.stringify(data)
-            };
-            try {
-                yield (0, axios_1.default)(config);
-                return;
-            }
-            catch (err) {
-                // todo: check error
-            }
-            core.info('Activity does not exist, creating...');
-            yield (0, axios_1.default)(createConfig);
+        const activityName = activity.id;
+        // const activityAlias = data.alias
+        // delete data.alias
+        const createConfig = {
+            method: 'post',
+            url: `https://developer.api.autodesk.com/da/us-east/v3/activities`,
+            headers,
+            data: JSON.stringify(activity)
+        };
+        delete activity.id;
+        const config = {
+            method: 'post',
+            url: `https://developer.api.autodesk.com/da/us-east/v3/activities/${activityName}/versions`,
+            headers,
+            data: JSON.stringify(activity)
+        };
+        try {
+            yield (0, axios_1.default)(config);
+            core.info(`Updating activity ${activityName}...`);
+            return;
         }
+        catch (err) {
+            // todo: check error
+        }
+        if (!createIfNotExists) {
+            throw new Error(`Activity ${activityName} doesn't exist`);
+        }
+        core.info(`Activity does not exist, creating activity ${activityName}...`);
+        yield (0, axios_1.default)(createConfig);
     });
 }
 function publish(inputs) {
@@ -301,11 +310,11 @@ function publish(inputs) {
         core.info('Got access token');
         core.info('Updating AppBundle...');
         const result = yield updateAppBundle(inputs, accessToken);
-        core.info('Updated AppBundle');
+        core.info(`Updated AppBundle ${inputs.appBundleId}`);
         core.info('Uploading AppBundle zip...');
         yield uploadAppBundle(inputs.appBundlePath, result.uploadParameters.formData, result.uploadParameters.endpointURL);
         core.info('Uploaded AppBundle zip');
-        core.info('Assigning AppBundle alias...');
+        core.info(`Assigning AppBundle alias - ${inputs.appBundleAlias}...`);
         yield assignAppBundleAlias(accessToken, result.version, inputs);
         core.info('Assigned AppBundle alias');
         core.info('Updating activities...');

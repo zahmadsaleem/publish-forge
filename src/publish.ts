@@ -237,7 +237,7 @@ export async function publish(inputs: Inputs): Promise<void> {
   core.info('Got access token')
   core.info('Updating AppBundle...')
   const result = await updateAppBundle(inputs, accessToken)
-  core.info('Updated AppBundle')
+  core.info(`Updated AppBundle ${inputs.appBundleId}`)
   core.info('Uploading AppBundle zip...')
   await uploadAppBundle(
     inputs.appBundlePath,
@@ -245,7 +245,7 @@ export async function publish(inputs: Inputs): Promise<void> {
     result.uploadParameters.endpointURL
   )
   core.info('Uploaded AppBundle zip')
-  core.info('Assigning AppBundle alias...')
+  core.info(`Assigning AppBundle alias - ${inputs.appBundleAlias}...`)
   await assignAppBundleAlias(accessToken, result.version, inputs)
   core.info('Assigned AppBundle alias')
   core.info('Updating activities...')
