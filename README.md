@@ -14,8 +14,8 @@ ClientId
 ```yaml
   runs-on: ubuntu-latest
   steps:
-    - uses: actions/checkout@main
-    - uses: "@zahmadsaleem/publish-forge@v1"
+    - uses: actions/checkout@v3
+    - uses: "@zahmadsaleem/publish-forge@main"
       with:
           client_id: ${{ secrets.FORGE_CLIENT_ID }}
           client_secret: ${{ secrets.FORGE_CLIENT_SECRET }}
