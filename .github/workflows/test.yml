@@ -22,12 +22,12 @@ jobs:
       - uses: actions/checkout@v3
       - uses: ./
         with:
-          clientId : ${{ secrets.FORGE_CLIENT_ID }}
-          clientSecret:  ${{ secrets.FORGE_CLIENT_SECRET }}
+          client_id : ${{ secrets.FORGE_CLIENT_ID }}
+          client_secret:  ${{ secrets.FORGE_CLIENT_SECRET }}
           activities: "./testdata/*.activity.json"
-          appBundleEngine: "Autodesk.Revit+2023"
-          appBundlePath: "./testdata/AppBundle.bundle.zip"
-          appBundleId: "TestAppBundle"
-          appBundleAlias: "prod"
+          app_bundle_engine: "Autodesk.Revit+2023"
+          app_bundle_path: "./testdata/AppBundle.bundle.zip"
+          app_bundle_id: "TestAppBundle"
+          app_bundle_alias: "prod"
           create: true
 
