@@ -184,11 +184,13 @@ async function updateActivities(
   const globber = await glob.create(inputs.activities)
   const files = await globber.glob()
 
-  for (const file_path of files) {
-    const activity = fs.readFileSync(file_path, 'utf8')
-    const data = JSON.parse(activity)
-    await updateActivity(data, inputs.create, accessToken)
-  }
+  await Promise.all(
+    files.map(async file_path => {
+      const data = fs.readFileSync(file_path, 'utf8')
+      const activity = JSON.parse(data)
+      await updateActivity(activity, inputs.create, accessToken)
+    })
+  )
 }
 
 async function updateActivity(
@@ -196,29 +198,30 @@ async function updateActivity(
   createIfNotExists: boolean,
   accessToken: string
 ): Promise<void> {
+  const copiedActivity = {...activity}
   const headers = {
     Authorization: `Bearer ${accessToken}`,
     'Content-Type': 'application/json'
   }
-  const activityName = activity.id as unknown as string
+  const activityName = copiedActivity.id as unknown as string
   // const activityAlias = data.alias
   // delete data.alias
   const createConfig = {
     method: 'post',
     url: `https://developer.api.autodesk.com/da/us-east/v3/activities`,
     headers,
-    data: JSON.stringify(activity)
+    data: JSON.stringify(copiedActivity)
   }
-  delete activity.id
+  delete copiedActivity.id
   const config = {
     method: 'post',
     url: `https://developer.api.autodesk.com/da/us-east/v3/activities/${activityName}/versions`,
     headers,
-    data: JSON.stringify(activity)
+    data: JSON.stringify(copiedActivity)
   }
   try {
-    await axios(config)
     core.info(`Updating activity ${activityName}...`)
+    await axios(config)
     return
   } catch (err) {
     // todo: check error

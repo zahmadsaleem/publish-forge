@@ -259,38 +259,39 @@ function updateActivities(accessToken, inputs) {
     return __awaiter(this, void 0, void 0, function* () {
         const globber = yield glob.create(inputs.activities);
         const files = yield globber.glob();
-        for (const file_path of files) {
-            const activity = fs_1.default.readFileSync(file_path, 'utf8');
-            const data = JSON.parse(activity);
-            yield updateActivity(data, inputs.create, accessToken);
-        }
+        yield Promise.all(files.map((file_path) => __awaiter(this, void 0, void 0, function* () {
+            const data = fs_1.default.readFileSync(file_path, 'utf8');
+            const activity = JSON.parse(data);
+            yield updateActivity(activity, inputs.create, accessToken);
+        })));
     });
 }
 function updateActivity(activity, createIfNotExists, accessToken) {
     return __awaiter(this, void 0, void 0, function* () {
+        const copiedActivity = Object.assign({}, activity);
         const headers = {
             Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json'
         };
-        const activityName = activity.id;
+        const activityName = copiedActivity.id;
         // const activityAlias = data.alias
         // delete data.alias
         const createConfig = {
             method: 'post',
             url: `https://developer.api.autodesk.com/da/us-east/v3/activities`,
             headers,
-            data: JSON.stringify(activity)
+            data: JSON.stringify(copiedActivity)
         };
-        delete activity.id;
+        delete copiedActivity.id;
         const config = {
             method: 'post',
             url: `https://developer.api.autodesk.com/da/us-east/v3/activities/${activityName}/versions`,
             headers,
-            data: JSON.stringify(activity)
+            data: JSON.stringify(copiedActivity)
         };
         try {
-            yield (0, axios_1.default)(config);
             core.info(`Updating activity ${activityName}...`);
+            yield (0, axios_1.default)(config);
             return;
         }
         catch (err) {
