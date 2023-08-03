@@ -1,6 +1,8 @@
 import { test, expect } from "@jest/globals";
 import { publish } from "./publish";
 import { config } from "dotenv";
+import {AxiosError} from 'axios'
+import * as core from '@actions/core'
 
 config();
 
@@ -14,13 +16,17 @@ test("dummy test", async () => {
       activities: "./testdata/*.activity.json",
       appBundleEngine: "Autodesk.Revit+2023",
       appBundlePath: "./testdata/AppBundle.bundle.zip",
-      nickname: "App",
-      appBundleId: "AppBundle",
-      appBundleAlias: "prod"
-
+      appBundleId: "TestAppBundle",
+      appBundleAlias: "prod",
+      create: true
     });
   } catch (error) {
-    console.log(error);
+    if (error instanceof AxiosError) {
+      console.log(error.response?.data)
+    }
+    else{
+      console.log(error);
+    }
   }
   expect(true).toBeTruthy();
 });

@@ -8,9 +8,6 @@ inputs:
   client_secret:
     required: true
     description: 'Forge Client Secret'
-  nickname:
-    required: true
-    description: 'Forge AppBundle nickname'
   appbundle_name:
     required: true
     description: 'Forge AppBundle Id/Name'

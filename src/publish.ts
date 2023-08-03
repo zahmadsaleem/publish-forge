@@ -1,18 +1,21 @@
 import * as glob from '@actions/glob'
 import FormData from 'form-data'
-import axios from 'axios'
+import axios, {AxiosError} from 'axios'
 import fs from 'fs'
 import qs from 'qs'
+import * as core from '@actions/core'
+import {error} from '@actions/core'
 
 export interface Inputs {
   clientId: string
   clientSecret: string
-  nickname: string
   appBundleId: string
   appBundleAlias: string
   appBundleEngine: string
   appBundlePath: string
   activities: string
+  create: boolean
+  description?: string
 }
 
 async function getAccessToken(
@@ -52,11 +55,6 @@ async function updateAppBundle(
   inputs: Inputs,
   accessToken: string
 ): Promise<AppBundleUpdateResponse> {
-  const data = JSON.stringify({
-    engine: inputs.appBundleEngine,
-    description: 'AnkerForge'
-  })
-
   const config = {
     method: 'post',
     url: `https://developer.api.autodesk.com/da/us-east/v3/appbundles/${inputs.appBundleId}/versions`,
@@ -64,10 +62,39 @@ async function updateAppBundle(
       'Content-Type': 'application/json',
       Authorization: `Bearer ${accessToken}`
     },
-    data
+    data: JSON.stringify({
+      engine: inputs.appBundleEngine,
+      description: inputs.description || ''
+    })
   }
 
-  const result = await axios(config)
+  const createConfig = {
+    method: 'post',
+    url: `https://developer.api.autodesk.com/da/us-east/v3/appbundles`,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`
+    },
+    data: JSON.stringify({
+      id: inputs.appBundleId,
+      engine: inputs.appBundleEngine,
+      description: inputs.description || ''
+    })
+  }
+
+  try {
+    const result = await axios(config)
+    return result.data
+  } catch (error) {
+    // todo: check error
+  }
+
+  if (!inputs.create) {
+    throw new Error("AppBundle doesn't exist")
+  }
+
+  core.info('AppBundle does not exist, creating...')
+  const result = await axios(createConfig)
   return result.data
 }
 
@@ -109,22 +136,46 @@ async function assignAppBundleAlias(
   versionNumber: Number,
   inputs: Inputs
 ): Promise<void> {
-  const data = {
-    version: versionNumber,
-    id: inputs.appBundleId
+  const config = {
+    method: 'patch',
+    url: `https://developer.api.autodesk.com/da/us-east/v3/appbundles/${inputs.appBundleId}/aliases/${inputs.appBundleAlias}`,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json'
+    },
+    data: JSON.stringify({
+      version: versionNumber
+    })
   }
 
-  const config = {
+  const createConfig = {
     method: 'post',
     url: `https://developer.api.autodesk.com/da/us-east/v3/appbundles/${inputs.appBundleId}/aliases`,
     headers: {
       Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json'
     },
-    data
+    data: JSON.stringify({
+      version: versionNumber,
+      id: inputs.appBundleAlias
+    })
   }
-  await axios(config)
+
+  try {
+    await axios(config)
+    return
+  } catch (error) {
+    // todo: check error
+  }
+
+  if (!inputs.create) {
+    throw new Error("AppBundle alias doesn't exist")
+  }
+
+  core.info('AppBundle alias does not exist, creating...')
+  await axios(createConfig)
 }
+
 async function updateActivities(
   accessToken: string,
   inputs: Inputs
@@ -132,34 +183,59 @@ async function updateActivities(
   const globber = await glob.create(inputs.activities)
   const files = await globber.glob()
 
+  const headers = {
+    Authorization: `Bearer ${accessToken}`,
+    'Content-Type': 'application/json'
+  }
   for (const file_path of files) {
     const activity = fs.readFileSync(file_path, 'utf8')
     const data = JSON.parse(activity)
 
     const activityName = data.id
+    // const activityAlias = data.alias
+    // delete data.alias
+    const createConfig = {
+      method: 'post',
+      url: `https://developer.api.autodesk.com/da/us-east/v3/activities`,
+      headers,
+      data: JSON.stringify(data)
+    }
     delete data.id
     const config = {
       method: 'post',
       url: `https://developer.api.autodesk.com/da/us-east/v3/activities/${activityName}/versions`,
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
-      },
+      headers,
       data: JSON.stringify(data)
     }
-
-    await axios(config)
+    try {
+      await axios(config)
+      return
+    } catch (err) {
+      // todo: check error
+    }
+    core.info('Activity does not exist, creating...')
+    await axios(createConfig)
   }
 }
 
 export async function publish(inputs: Inputs): Promise<void> {
+  core.info('Getting access token...')
   const accessToken = await getAccessToken(inputs.clientId, inputs.clientSecret)
+  core.info('Got access token')
+  core.info('Updating AppBundle...')
   const result = await updateAppBundle(inputs, accessToken)
+  core.info('Updated AppBundle')
+  core.info('Uploading AppBundle zip...')
   await uploadAppBundle(
     inputs.appBundlePath,
     result.uploadParameters.formData,
     result.uploadParameters.endpointURL
   )
+  core.info('Uploaded AppBundle zip')
+  core.info('Assigning AppBundle alias...')
   await assignAppBundleAlias(accessToken, result.version, inputs)
+  core.info('Assigned AppBundle alias')
+  core.info('Updating activities...')
   await updateActivities(accessToken, inputs)
+  core.info('Updated activities')
 }

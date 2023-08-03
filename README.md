@@ -7,7 +7,6 @@ WIP
 [Autodesk Docs](https://aps.autodesk.com/en/docs/design-automation/v3/developers_guide/basics/)
 
 ClientId
-- Nickname
 - AppBundle
   - Aliases connected to AppBundle version(eg: dev --> 5, prod --> 3)
     - Activity (automatically versioned)

@@ -45,7 +45,6 @@ function getInputs() {
     return {
         clientId: core.getInput('client_id'),
         clientSecret: core.getInput('client_secret'),
-        nickname: core.getInput('nickname'),
         appBundleAlias: core.getInput('appbundle_alias'),
         appBundleEngine: core.getInput('appbundle_engine'),
         appBundleId: core.getInput('appbundle_id'),

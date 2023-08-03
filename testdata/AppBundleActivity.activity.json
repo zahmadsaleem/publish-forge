@@ -1,6 +1,6 @@
 {
-  "id": "AppBundleActivity",
-  "commandLine": [ "$(engine.path)\\\\revitcoreconsole.exe /i \"$(args[rvtFile].path)\" /al \"$(appbundles[AppMethod].path)\"" ],
+  "id": "TestAppBundleActivity",
+  "commandLine": [ "$(engine.path)\\\\revitcoreconsole.exe /i \"$(args[rvtFile].path)\" /al \"$(appbundles[TestAppBundle].path)\"" ],
   "parameters": {
     "rvtFile": {
       "zip": false,
@@ -18,6 +18,6 @@
     }
   },
   "engine": "Autodesk.Revit+2023",
-  "appbundles": [ "AppBundle.AppMethod+prod" ],
+  "appbundles": [ "Anker.TestAppBundle+prod" ],
   "description": "Default activity with sync params as JSON."
 }
