@@ -14,7 +14,7 @@ ClientId
 ```yaml
   runs-on: ubuntu-latest
   steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@main
     - uses: "@zahmadsaleem/publish-forge@v1"
       with:
           client_id: ${{ secrets.FORGE_CLIENT_ID }}
@@ -23,4 +23,9 @@ ClientId
           appbundle_alias: "dev"
           appbundle_path: "/path/to/appbundle.zip"
           activities: "/path/to/*.json"
+          create: true
 ```
+
+TOD0:
+- [x] Allow creating if not exists
+- [ ] Add support for activity aliases
