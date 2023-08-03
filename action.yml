@@ -8,7 +8,7 @@ inputs:
   client_secret:
     required: true
     description: 'Forge Client Secret'
-  appbundle_name:
+  appbundle_id:
     required: true
     description: 'Forge AppBundle Id/Name'
   appbundle_engine:
@@ -24,6 +24,9 @@ inputs:
   activities:
     required: true
     description: 'File path selector to the activities json file(s)'
+  create:
+    required: false
+    description: 'Create if not exists'
 
 runs:
   using: 'node16'
