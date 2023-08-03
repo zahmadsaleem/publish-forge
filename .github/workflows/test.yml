@@ -25,9 +25,9 @@ jobs:
           client_id : ${{ secrets.FORGE_CLIENT_ID }}
           client_secret:  ${{ secrets.FORGE_CLIENT_SECRET }}
           activities: "./testdata/*.activity.json"
-          app_bundle_engine: "Autodesk.Revit+2023"
-          app_bundle_path: "./testdata/AppBundle.bundle.zip"
-          app_bundle_id: "TestAppBundle"
-          app_bundle_alias: "prod"
+          appbundle_engine: "Autodesk.Revit+2023"
+          appbundle_path: "./testdata/AppBundle.bundle.zip"
+          appbundle_id: "TestAppBundle"
+          appbundle_alias: "prod"
           create: true
 
