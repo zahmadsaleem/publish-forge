@@ -89,10 +89,10 @@ async function updateAppBundle(
   }
 
   if (!inputs.create) {
-    throw new Error("AppBundle doesn't exist")
+    throw new Error(`AppBundle ${inputs.appBundleId} doesn't exist`)
   }
 
-  core.info('AppBundle does not exist, creating...')
+  core.info(`AppBundle ${inputs.appBundleId} does not exist, creating...`)
   const result = await axios(createConfig)
   return result.data
 }
@@ -168,10 +168,12 @@ async function assignAppBundleAlias(
   }
 
   if (!inputs.create) {
-    throw new Error("AppBundle alias doesn't exist")
+    throw new Error(`AppBundle alias ${inputs.appBundleAlias} doesn't exist`)
   }
 
-  core.info('AppBundle alias does not exist, creating...')
+  core.info(
+    `AppBundle alias ${inputs.appBundleAlias} does not exist, creating...`
+  )
   await axios(createConfig)
 }
 
@@ -182,39 +184,51 @@ async function updateActivities(
   const globber = await glob.create(inputs.activities)
   const files = await globber.glob()
 
+  for (const file_path of files) {
+    const activity = fs.readFileSync(file_path, 'utf8')
+    const data = JSON.parse(activity)
+    await updateActivity(data, inputs.create, accessToken)
+  }
+}
+
+async function updateActivity(
+  activity: Record<string, never>,
+  createIfNotExists: boolean,
+  accessToken: string
+): Promise<void> {
   const headers = {
     Authorization: `Bearer ${accessToken}`,
     'Content-Type': 'application/json'
   }
-  for (const file_path of files) {
-    const activity = fs.readFileSync(file_path, 'utf8')
-    const data = JSON.parse(activity)
-
-    const activityName = data.id
-    // const activityAlias = data.alias
-    // delete data.alias
-    const createConfig = {
-      method: 'post',
-      url: `https://developer.api.autodesk.com/da/us-east/v3/activities`,
-      headers,
-      data: JSON.stringify(data)
-    }
-    delete data.id
-    const config = {
-      method: 'post',
-      url: `https://developer.api.autodesk.com/da/us-east/v3/activities/${activityName}/versions`,
-      headers,
-      data: JSON.stringify(data)
-    }
-    try {
-      await axios(config)
-      return
-    } catch (err) {
-      // todo: check error
-    }
-    core.info('Activity does not exist, creating...')
-    await axios(createConfig)
+  const activityName = activity.id as unknown as string
+  // const activityAlias = data.alias
+  // delete data.alias
+  const createConfig = {
+    method: 'post',
+    url: `https://developer.api.autodesk.com/da/us-east/v3/activities`,
+    headers,
+    data: JSON.stringify(activity)
   }
+  delete activity.id
+  const config = {
+    method: 'post',
+    url: `https://developer.api.autodesk.com/da/us-east/v3/activities/${activityName}/versions`,
+    headers,
+    data: JSON.stringify(activity)
+  }
+  try {
+    await axios(config)
+    core.info(`Updating activity ${activityName}...`)
+    return
+  } catch (err) {
+    // todo: check error
+  }
+  if (!createIfNotExists) {
+    throw new Error(`Activity ${activityName} doesn't exist`)
+  }
+
+  core.info(`Activity does not exist, creating activity ${activityName}...`)
+  await axios(createConfig)
 }
 
 export async function publish(inputs: Inputs): Promise<void> {
