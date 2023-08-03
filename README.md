@@ -17,13 +17,14 @@ ClientId
     - uses: actions/checkout@v3
     - uses: "@zahmadsaleem/publish-forge@main"
       with:
-          client_id: ${{ secrets.FORGE_CLIENT_ID }}
-          client_secret: ${{ secrets.FORGE_CLIENT_SECRET }}
-          appbundle_name: "MyAppBundle"
-          appbundle_alias: "dev"
-          appbundle_path: "/path/to/appbundle.zip"
-          activities: "/path/to/*.json"
-          create: true
+        client_id : ${{ secrets.FORGE_CLIENT_ID }}
+        client_secret:  ${{ secrets.FORGE_CLIENT_SECRET }}
+        activities: "./testdata/*.activity.json"
+        appbundle_engine: "Autodesk.Revit+2023"
+        appbundle_path: "./testdata/AppBundle.bundle.zip"
+        appbundle_id: "TestAppBundle"
+        appbundle_alias: "prod"
+        create: true
 ```
 
 TOD0:
