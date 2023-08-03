@@ -1,10 +1,9 @@
 import * as glob from '@actions/glob'
 import FormData from 'form-data'
-import axios, {AxiosError} from 'axios'
+import axios from 'axios'
 import fs from 'fs'
 import qs from 'qs'
 import * as core from '@actions/core'
-import {error} from '@actions/core'
 
 export interface Inputs {
   clientId: string

@@ -16,11 +16,18 @@ jobs:
       - run: |
           npm run all
 
-# todo: add test job
-#  test: # make sure the action works on a clean machine without building
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v3
-#      - uses: ./
-#        with:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./
+        with:
+          clientId : ${{ secrets.FORGE_CLIENT_ID }}
+          clientSecret:  ${{ secrets.FORGE_CLIENT_SECRET }}
+          activities: "./testdata/*.activity.json"
+          appBundleEngine: "Autodesk.Revit+2023"
+          appBundlePath: "./testdata/AppBundle.bundle.zip"
+          appBundleId: "TestAppBundle"
+          appBundleAlias: "prod"
+          create: true
 

@@ -41,6 +41,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const publish_1 = __nccwpck_require__(6123);
+const axios_1 = __nccwpck_require__(8757);
 function getInputs() {
     return {
         clientId: core.getInput('client_id'),
@@ -49,10 +50,12 @@ function getInputs() {
         appBundleEngine: core.getInput('appbundle_engine'),
         appBundleId: core.getInput('appbundle_id'),
         appBundlePath: core.getInput('appbundle_path'),
-        activities: core.getInput('activities')
+        activities: core.getInput('activities'),
+        create: core.getInput('create') === 'true'
     };
 }
 function run() {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             core.info('Publishing app bundle...');
@@ -61,8 +64,15 @@ function run() {
             core.info('App bundle published successfully');
         }
         catch (error) {
-            if (error instanceof Error)
+            if (error instanceof axios_1.AxiosError) {
+                core.setFailed((_a = error.response) === null || _a === void 0 ? void 0 : _a.data);
+                return;
+            }
+            if (error instanceof Error) {
                 core.setFailed(error.message);
+                return;
+            }
+            core.setFailed('Unknown error');
         }
     });
 }
@@ -118,6 +128,7 @@ const form_data_1 = __importDefault(__nccwpck_require__(4334));
 const axios_1 = __importDefault(__nccwpck_require__(8757));
 const fs_1 = __importDefault(__nccwpck_require__(7147));
 const qs_1 = __importDefault(__nccwpck_require__(2760));
+const core = __importStar(__nccwpck_require__(2186));
 function getAccessToken(clientId, clientSecret) {
     return __awaiter(this, void 0, void 0, function* () {
         const data = qs_1.default.stringify({
@@ -140,10 +151,6 @@ function getAccessToken(clientId, clientSecret) {
 }
 function updateAppBundle(inputs, accessToken) {
     return __awaiter(this, void 0, void 0, function* () {
-        const data = JSON.stringify({
-            engine: inputs.appBundleEngine,
-            description: 'AnkerForge'
-        });
         const config = {
             method: 'post',
             url: `https://developer.api.autodesk.com/da/us-east/v3/appbundles/${inputs.appBundleId}/versions`,
@@ -151,9 +158,36 @@ function updateAppBundle(inputs, accessToken) {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${accessToken}`
             },
-            data
+            data: JSON.stringify({
+                engine: inputs.appBundleEngine,
+                description: inputs.description || ''
+            })
         };
-        const result = yield (0, axios_1.default)(config);
+        const createConfig = {
+            method: 'post',
+            url: `https://developer.api.autodesk.com/da/us-east/v3/appbundles`,
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`
+            },
+            data: JSON.stringify({
+                id: inputs.appBundleId,
+                engine: inputs.appBundleEngine,
+                description: inputs.description || ''
+            })
+        };
+        try {
+            const result = yield (0, axios_1.default)(config);
+            return result.data;
+        }
+        catch (error) {
+            // todo: check error
+        }
+        if (!inputs.create) {
+            throw new Error("AppBundle doesn't exist");
+        }
+        core.info('AppBundle does not exist, creating...');
+        const result = yield (0, axios_1.default)(createConfig);
         return result.data;
     });
 }
@@ -184,51 +218,99 @@ function uploadAppBundle(zipFilePath, formData, uploadUrl) {
 }
 function assignAppBundleAlias(accessToken, versionNumber, inputs) {
     return __awaiter(this, void 0, void 0, function* () {
-        const data = {
-            version: versionNumber,
-            id: inputs.appBundleId
-        };
         const config = {
+            method: 'patch',
+            url: `https://developer.api.autodesk.com/da/us-east/v3/appbundles/${inputs.appBundleId}/aliases/${inputs.appBundleAlias}`,
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify({
+                version: versionNumber
+            })
+        };
+        const createConfig = {
             method: 'post',
             url: `https://developer.api.autodesk.com/da/us-east/v3/appbundles/${inputs.appBundleId}/aliases`,
             headers: {
                 Authorization: `Bearer ${accessToken}`,
                 'Content-Type': 'application/json'
             },
-            data
+            data: JSON.stringify({
+                version: versionNumber,
+                id: inputs.appBundleAlias
+            })
         };
-        yield (0, axios_1.default)(config);
+        try {
+            yield (0, axios_1.default)(config);
+            return;
+        }
+        catch (error) {
+            // todo: check error
+        }
+        if (!inputs.create) {
+            throw new Error("AppBundle alias doesn't exist");
+        }
+        core.info('AppBundle alias does not exist, creating...');
+        yield (0, axios_1.default)(createConfig);
     });
 }
 function updateActivities(accessToken, inputs) {
     return __awaiter(this, void 0, void 0, function* () {
         const globber = yield glob.create(inputs.activities);
         const files = yield globber.glob();
+        const headers = {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+        };
         for (const file_path of files) {
             const activity = fs_1.default.readFileSync(file_path, 'utf8');
             const data = JSON.parse(activity);
             const activityName = data.id;
+            // const activityAlias = data.alias
+            // delete data.alias
+            const createConfig = {
+                method: 'post',
+                url: `https://developer.api.autodesk.com/da/us-east/v3/activities`,
+                headers,
+                data: JSON.stringify(data)
+            };
             delete data.id;
             const config = {
                 method: 'post',
                 url: `https://developer.api.autodesk.com/da/us-east/v3/activities/${activityName}/versions`,
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                    'Content-Type': 'application/json'
-                },
+                headers,
                 data: JSON.stringify(data)
             };
-            yield (0, axios_1.default)(config);
+            try {
+                yield (0, axios_1.default)(config);
+                return;
+            }
+            catch (err) {
+                // todo: check error
+            }
+            core.info('Activity does not exist, creating...');
+            yield (0, axios_1.default)(createConfig);
         }
     });
 }
 function publish(inputs) {
     return __awaiter(this, void 0, void 0, function* () {
+        core.info('Getting access token...');
         const accessToken = yield getAccessToken(inputs.clientId, inputs.clientSecret);
+        core.info('Got access token');
+        core.info('Updating AppBundle...');
         const result = yield updateAppBundle(inputs, accessToken);
+        core.info('Updated AppBundle');
+        core.info('Uploading AppBundle zip...');
         yield uploadAppBundle(inputs.appBundlePath, result.uploadParameters.formData, result.uploadParameters.endpointURL);
+        core.info('Uploaded AppBundle zip');
+        core.info('Assigning AppBundle alias...');
         yield assignAppBundleAlias(accessToken, result.version, inputs);
+        core.info('Assigned AppBundle alias');
+        core.info('Updating activities...');
         yield updateActivities(accessToken, inputs);
+        core.info('Updated activities');
     });
 }
 exports.publish = publish;
