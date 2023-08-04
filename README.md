@@ -9,7 +9,7 @@ Example Usage:
   runs-on: ubuntu-latest
   steps:
     - uses: actions/checkout@v3
-    - uses: "@zahmadsaleem/publish-forge@main"
+    - uses: "@zahmadsaleem/publish-forge@v1"
       with:
         client_id : ${{ secrets.FORGE_CLIENT_ID }}
         client_secret:  ${{ secrets.FORGE_CLIENT_SECRET }}
