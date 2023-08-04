@@ -1,6 +1,361 @@
 require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 6864:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.updateActivities = void 0;
+const glob = __importStar(__nccwpck_require__(8090));
+const core = __importStar(__nccwpck_require__(2186));
+const fs_1 = __importDefault(__nccwpck_require__(7147));
+const axios_1 = __importDefault(__nccwpck_require__(8757));
+function updateActivities(accessToken, inputs) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const globber = yield glob.create(inputs.activities);
+        const files = yield globber.glob();
+        core.debug(`Found ${files.length} activities, file paths: ${JSON.stringify(files)}`);
+        yield Promise.all(files.map((file_path) => __awaiter(this, void 0, void 0, function* () {
+            const data = fs_1.default.readFileSync(file_path, 'utf8');
+            core.debug(`Reading activity data from ${file_path}`);
+            core.debug(`Activity data: ${data}`);
+            const activity = JSON.parse(data);
+            yield updateActivity(activity, inputs.create, accessToken);
+        })));
+    });
+}
+exports.updateActivities = updateActivities;
+function updateActivity(activity, createIfNotExists, accessToken) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const copiedActivity = Object.assign({}, activity);
+        const headers = {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+        };
+        const activityName = copiedActivity.id;
+        // const activityAlias = data.alias
+        // delete data.alias
+        const createConfig = {
+            method: 'post',
+            url: `https://developer.api.autodesk.com/da/us-east/v3/activities`,
+            headers,
+            data: JSON.stringify(copiedActivity)
+        };
+        delete copiedActivity.id;
+        const config = {
+            method: 'post',
+            url: `https://developer.api.autodesk.com/da/us-east/v3/activities/${activityName}/versions`,
+            headers,
+            data: JSON.stringify(copiedActivity)
+        };
+        try {
+            core.info(`Updating activity ${activityName}...`);
+            yield (0, axios_1.default)(config);
+            return;
+        }
+        catch (err) {
+            // todo: check error
+        }
+        if (!createIfNotExists) {
+            throw new Error(`Activity ${activityName} doesn't exist`);
+        }
+        core.info(`Activity does not exist, creating activity ${activityName}...`);
+        yield (0, axios_1.default)(createConfig);
+    });
+}
+
+
+/***/ }),
+
+/***/ 2466:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.assignAppBundleAlias = exports.uploadAppBundle = exports.updateAppBundle = void 0;
+const axios_1 = __importDefault(__nccwpck_require__(8757));
+const core = __importStar(__nccwpck_require__(2186));
+const form_data_1 = __importDefault(__nccwpck_require__(4334));
+const fs_1 = __importDefault(__nccwpck_require__(7147));
+function updateAppBundle(inputs, accessToken) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const config = {
+            method: 'post',
+            url: `https://developer.api.autodesk.com/da/us-east/v3/appbundles/${inputs.appBundleId}/versions`,
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`
+            },
+            data: JSON.stringify({
+                engine: inputs.appBundleEngine,
+                description: inputs.description || ''
+            })
+        };
+        const createConfig = {
+            method: 'post',
+            url: `https://developer.api.autodesk.com/da/us-east/v3/appbundles`,
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`
+            },
+            data: JSON.stringify({
+                id: inputs.appBundleId,
+                engine: inputs.appBundleEngine,
+                description: inputs.description || ''
+            })
+        };
+        try {
+            const result = yield (0, axios_1.default)(config);
+            return result.data;
+        }
+        catch (error) {
+            // todo: check error
+        }
+        if (!inputs.create) {
+            throw new Error(`AppBundle ${inputs.appBundleId} doesn't exist`);
+        }
+        core.info(`AppBundle ${inputs.appBundleId} does not exist, creating...`);
+        const result = yield (0, axios_1.default)(createConfig);
+        return result.data;
+    });
+}
+exports.updateAppBundle = updateAppBundle;
+function uploadAppBundle(zipFilePath, formData, uploadUrl) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const data = new form_data_1.default();
+        data.append('key', formData.key);
+        data.append('content-type', 'application/octet-stream');
+        data.append('policy', formData.policy);
+        data.append('success_action_status', '200');
+        data.append('success_action_redirect', '');
+        data.append('x-amz-signature', formData['x-amz-signature']);
+        data.append('x-amz-credential', formData['x-amz-credential']);
+        data.append('x-amz-algorithm', formData['x-amz-algorithm']);
+        data.append('x-amz-date', formData['x-amz-date']);
+        data.append('x-amz-server-side-encryption', 'AES256');
+        data.append('x-amz-security-token', formData['x-amz-security-token']);
+        data.append('file', fs_1.default.createReadStream(zipFilePath));
+        const config = {
+            method: 'post',
+            url: uploadUrl,
+            headers: Object.assign({}, data.getHeaders()),
+            data
+        };
+        yield (0, axios_1.default)(config);
+        return;
+    });
+}
+exports.uploadAppBundle = uploadAppBundle;
+function assignAppBundleAlias(accessToken, versionNumber, inputs) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const config = {
+            method: 'patch',
+            url: `https://developer.api.autodesk.com/da/us-east/v3/appbundles/${inputs.appBundleId}/aliases/${inputs.appBundleAlias}`,
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify({
+                version: versionNumber
+            })
+        };
+        const createConfig = {
+            method: 'post',
+            url: `https://developer.api.autodesk.com/da/us-east/v3/appbundles/${inputs.appBundleId}/aliases`,
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify({
+                version: versionNumber,
+                id: inputs.appBundleAlias
+            })
+        };
+        try {
+            yield (0, axios_1.default)(config);
+            return;
+        }
+        catch (error) {
+            // todo: check error
+        }
+        if (!inputs.create) {
+            throw new Error(`AppBundle alias ${inputs.appBundleAlias} doesn't exist`);
+        }
+        core.info(`AppBundle alias ${inputs.appBundleAlias} does not exist, creating...`);
+        yield (0, axios_1.default)(createConfig);
+    });
+}
+exports.assignAppBundleAlias = assignAppBundleAlias;
+
+
+/***/ }),
+
+/***/ 1984:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getAccessToken = void 0;
+const qs_1 = __importDefault(__nccwpck_require__(2760));
+const axios_1 = __importDefault(__nccwpck_require__(8757));
+function getAccessToken(clientId, clientSecret) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const data = qs_1.default.stringify({
+            grant_type: 'client_credentials',
+            scope: 'code:all'
+        });
+        const config = {
+            method: 'post',
+            url: 'https://developer.api.autodesk.com/authentication/v2/token',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`
+            },
+            data
+        };
+        const result = yield (0, axios_1.default)(config);
+        return result.data.access_token;
+    });
+}
+exports.getAccessToken = getAccessToken;
+
+
+/***/ }),
+
+/***/ 6180:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getInputs = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+function getInputs() {
+    return {
+        clientId: core.getInput('client_id'),
+        clientSecret: core.getInput('client_secret'),
+        appBundleAlias: core.getInput('appbundle_alias'),
+        appBundleEngine: core.getInput('appbundle_engine'),
+        appBundleId: core.getInput('appbundle_id'),
+        appBundlePath: core.getInput('appbundle_path'),
+        activities: core.getInput('activities'),
+        create: core.getInput('create') === 'true'
+    };
+}
+exports.getInputs = getInputs;
+
+
+/***/ }),
+
 /***/ 3109:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -42,26 +397,13 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const publish_1 = __nccwpck_require__(6123);
 const axios_1 = __nccwpck_require__(8757);
-function getInputs() {
-    return {
-        clientId: core.getInput('client_id'),
-        clientSecret: core.getInput('client_secret'),
-        appBundleAlias: core.getInput('appbundle_alias'),
-        appBundleEngine: core.getInput('appbundle_engine'),
-        appBundleId: core.getInput('appbundle_id'),
-        appBundlePath: core.getInput('appbundle_path'),
-        activities: core.getInput('activities'),
-        create: core.getInput('create') === 'true'
-    };
-}
+const inputs_1 = __nccwpck_require__(6180);
 function run() {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            core.info('Publishing app bundle...');
-            const inputs = getInputs();
+            const inputs = (0, inputs_1.getInputs)();
             yield (0, publish_1.publish)(inputs);
-            core.info('App bundle published successfully');
         }
         catch (error) {
             if (error instanceof axios_1.AxiosError) {
@@ -122,211 +464,30 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.publish = void 0;
-const glob = __importStar(__nccwpck_require__(8090));
-const form_data_1 = __importDefault(__nccwpck_require__(4334));
-const axios_1 = __importDefault(__nccwpck_require__(8757));
-const fs_1 = __importDefault(__nccwpck_require__(7147));
-const qs_1 = __importDefault(__nccwpck_require__(2760));
 const core = __importStar(__nccwpck_require__(2186));
-function getAccessToken(clientId, clientSecret) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const data = qs_1.default.stringify({
-            grant_type: 'client_credentials',
-            scope: 'code:all'
-        });
-        const config = {
-            method: 'post',
-            url: 'https://developer.api.autodesk.com/authentication/v2/token',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`
-            },
-            data
-        };
-        const result = yield (0, axios_1.default)(config);
-        return result.data.access_token;
-    });
-}
-function updateAppBundle(inputs, accessToken) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const config = {
-            method: 'post',
-            url: `https://developer.api.autodesk.com/da/us-east/v3/appbundles/${inputs.appBundleId}/versions`,
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`
-            },
-            data: JSON.stringify({
-                engine: inputs.appBundleEngine,
-                description: inputs.description || ''
-            })
-        };
-        const createConfig = {
-            method: 'post',
-            url: `https://developer.api.autodesk.com/da/us-east/v3/appbundles`,
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`
-            },
-            data: JSON.stringify({
-                id: inputs.appBundleId,
-                engine: inputs.appBundleEngine,
-                description: inputs.description || ''
-            })
-        };
-        try {
-            const result = yield (0, axios_1.default)(config);
-            return result.data;
-        }
-        catch (error) {
-            // todo: check error
-        }
-        if (!inputs.create) {
-            throw new Error(`AppBundle ${inputs.appBundleId} doesn't exist`);
-        }
-        core.info(`AppBundle ${inputs.appBundleId} does not exist, creating...`);
-        const result = yield (0, axios_1.default)(createConfig);
-        return result.data;
-    });
-}
-function uploadAppBundle(zipFilePath, formData, uploadUrl) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const data = new form_data_1.default();
-        data.append('key', formData.key);
-        data.append('content-type', 'application/octet-stream');
-        data.append('policy', formData.policy);
-        data.append('success_action_status', '200');
-        data.append('success_action_redirect', '');
-        data.append('x-amz-signature', formData['x-amz-signature']);
-        data.append('x-amz-credential', formData['x-amz-credential']);
-        data.append('x-amz-algorithm', formData['x-amz-algorithm']);
-        data.append('x-amz-date', formData['x-amz-date']);
-        data.append('x-amz-server-side-encryption', 'AES256');
-        data.append('x-amz-security-token', formData['x-amz-security-token']);
-        data.append('file', fs_1.default.createReadStream(zipFilePath));
-        const config = {
-            method: 'post',
-            url: uploadUrl,
-            headers: Object.assign({}, data.getHeaders()),
-            data
-        };
-        yield (0, axios_1.default)(config);
-        return;
-    });
-}
-function assignAppBundleAlias(accessToken, versionNumber, inputs) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const config = {
-            method: 'patch',
-            url: `https://developer.api.autodesk.com/da/us-east/v3/appbundles/${inputs.appBundleId}/aliases/${inputs.appBundleAlias}`,
-            headers: {
-                Authorization: `Bearer ${accessToken}`,
-                'Content-Type': 'application/json'
-            },
-            data: JSON.stringify({
-                version: versionNumber
-            })
-        };
-        const createConfig = {
-            method: 'post',
-            url: `https://developer.api.autodesk.com/da/us-east/v3/appbundles/${inputs.appBundleId}/aliases`,
-            headers: {
-                Authorization: `Bearer ${accessToken}`,
-                'Content-Type': 'application/json'
-            },
-            data: JSON.stringify({
-                version: versionNumber,
-                id: inputs.appBundleAlias
-            })
-        };
-        try {
-            yield (0, axios_1.default)(config);
-            return;
-        }
-        catch (error) {
-            // todo: check error
-        }
-        if (!inputs.create) {
-            throw new Error(`AppBundle alias ${inputs.appBundleAlias} doesn't exist`);
-        }
-        core.info(`AppBundle alias ${inputs.appBundleAlias} does not exist, creating...`);
-        yield (0, axios_1.default)(createConfig);
-    });
-}
-function updateActivities(accessToken, inputs) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const globber = yield glob.create(inputs.activities);
-        const files = yield globber.glob();
-        core.debug(`Found ${files.length} activities, file paths: ${JSON.stringify(files)}`);
-        yield Promise.all(files.map((file_path) => __awaiter(this, void 0, void 0, function* () {
-            const data = fs_1.default.readFileSync(file_path, 'utf8');
-            core.debug(`Reading activity data from ${file_path}`);
-            core.debug(`Activity data: ${data}`);
-            const activity = JSON.parse(data);
-            yield updateActivity(activity, inputs.create, accessToken);
-        })));
-    });
-}
-function updateActivity(activity, createIfNotExists, accessToken) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const copiedActivity = Object.assign({}, activity);
-        const headers = {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-        };
-        const activityName = copiedActivity.id;
-        // const activityAlias = data.alias
-        // delete data.alias
-        const createConfig = {
-            method: 'post',
-            url: `https://developer.api.autodesk.com/da/us-east/v3/activities`,
-            headers,
-            data: JSON.stringify(copiedActivity)
-        };
-        delete copiedActivity.id;
-        const config = {
-            method: 'post',
-            url: `https://developer.api.autodesk.com/da/us-east/v3/activities/${activityName}/versions`,
-            headers,
-            data: JSON.stringify(copiedActivity)
-        };
-        try {
-            core.info(`Updating activity ${activityName}...`);
-            yield (0, axios_1.default)(config);
-            return;
-        }
-        catch (err) {
-            // todo: check error
-        }
-        if (!createIfNotExists) {
-            throw new Error(`Activity ${activityName} doesn't exist`);
-        }
-        core.info(`Activity does not exist, creating activity ${activityName}...`);
-        yield (0, axios_1.default)(createConfig);
-    });
-}
+const app_bundle_1 = __nccwpck_require__(2466);
+const activity_1 = __nccwpck_require__(6864);
+const auth_1 = __nccwpck_require__(1984);
 function publish(inputs) {
     return __awaiter(this, void 0, void 0, function* () {
         core.info('Getting access token...');
-        const accessToken = yield getAccessToken(inputs.clientId, inputs.clientSecret);
+        const accessToken = yield (0, auth_1.getAccessToken)(inputs.clientId, inputs.clientSecret);
         core.info('Got access token');
         core.info('Updating AppBundle...');
-        const result = yield updateAppBundle(inputs, accessToken);
+        const result = yield (0, app_bundle_1.updateAppBundle)(inputs, accessToken);
         core.info(`Updated AppBundle ${inputs.appBundleId}`);
         core.info('Uploading AppBundle zip...');
-        yield uploadAppBundle(inputs.appBundlePath, result.uploadParameters.formData, result.uploadParameters.endpointURL);
+        yield (0, app_bundle_1.uploadAppBundle)(inputs.appBundlePath, result.uploadParameters.formData, result.uploadParameters.endpointURL);
         core.info('Uploaded AppBundle zip');
         core.info(`Assigning AppBundle alias - ${inputs.appBundleAlias}...`);
-        yield assignAppBundleAlias(accessToken, result.version, inputs);
+        yield (0, app_bundle_1.assignAppBundleAlias)(accessToken, result.version, inputs);
         core.info('Assigned AppBundle alias');
         core.info('Updating activities...');
-        yield updateActivities(accessToken, inputs);
+        yield (0, activity_1.updateActivities)(accessToken, inputs);
         core.info('Updated activities');
+        core.info('AppBundle and Activities updated successfully');
     });
 }
 exports.publish = publish;

@@ -2,8 +2,6 @@ import { test, expect } from "@jest/globals";
 import { publish } from "./publish";
 import { config } from "dotenv";
 import {AxiosError} from 'axios'
-import * as core from '@actions/core'
-
 config();
 
 const clientId = process.env.FORGE_CLIENT_ID as string;
