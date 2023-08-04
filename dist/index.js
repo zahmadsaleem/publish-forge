@@ -47,6 +47,7 @@ const glob = __importStar(__nccwpck_require__(8090));
 const core = __importStar(__nccwpck_require__(2186));
 const fs_1 = __importDefault(__nccwpck_require__(7147));
 const axios_1 = __importDefault(__nccwpck_require__(8757));
+const config_1 = __nccwpck_require__(8475);
 function updateActivities(accessToken, inputs) {
     return __awaiter(this, void 0, void 0, function* () {
         const globber = yield glob.create(inputs.activities);
@@ -74,14 +75,14 @@ function updateActivity(activity, createIfNotExists, accessToken) {
         // delete data.alias
         const createConfig = {
             method: 'post',
-            url: `https://developer.api.autodesk.com/da/us-east/v3/activities`,
+            url: `${config_1.designAutomationApiBaseUrl}/activities`,
             headers,
             data: JSON.stringify(copiedActivity)
         };
         delete copiedActivity.id;
         const config = {
             method: 'post',
-            url: `https://developer.api.autodesk.com/da/us-east/v3/activities/${activityName}/versions`,
+            url: `${config_1.designAutomationApiBaseUrl}/activities/${activityName}/versions`,
             headers,
             data: JSON.stringify(copiedActivity)
         };
@@ -150,11 +151,12 @@ const axios_1 = __importDefault(__nccwpck_require__(8757));
 const core = __importStar(__nccwpck_require__(2186));
 const form_data_1 = __importDefault(__nccwpck_require__(4334));
 const fs_1 = __importDefault(__nccwpck_require__(7147));
+const config_1 = __nccwpck_require__(8475);
 function updateAppBundle(inputs, accessToken) {
     return __awaiter(this, void 0, void 0, function* () {
         const config = {
             method: 'post',
-            url: `https://developer.api.autodesk.com/da/us-east/v3/appbundles/${inputs.appBundleId}/versions`,
+            url: `${config_1.designAutomationApiBaseUrl}/appbundles/${inputs.appBundleId}/versions`,
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${accessToken}`
@@ -166,7 +168,7 @@ function updateAppBundle(inputs, accessToken) {
         };
         const createConfig = {
             method: 'post',
-            url: `https://developer.api.autodesk.com/da/us-east/v3/appbundles`,
+            url: `${config_1.designAutomationApiBaseUrl}/appbundles`,
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${accessToken}`
@@ -223,7 +225,7 @@ function assignAppBundleAlias(accessToken, versionNumber, inputs) {
     return __awaiter(this, void 0, void 0, function* () {
         const config = {
             method: 'patch',
-            url: `https://developer.api.autodesk.com/da/us-east/v3/appbundles/${inputs.appBundleId}/aliases/${inputs.appBundleAlias}`,
+            url: `${config_1.designAutomationApiBaseUrl}/appbundles/${inputs.appBundleId}/aliases/${inputs.appBundleAlias}`,
             headers: {
                 Authorization: `Bearer ${accessToken}`,
                 'Content-Type': 'application/json'
@@ -234,7 +236,7 @@ function assignAppBundleAlias(accessToken, versionNumber, inputs) {
         };
         const createConfig = {
             method: 'post',
-            url: `https://developer.api.autodesk.com/da/us-east/v3/appbundles/${inputs.appBundleId}/aliases`,
+            url: `${config_1.designAutomationApiBaseUrl}/appbundles/${inputs.appBundleId}/aliases`,
             headers: {
                 Authorization: `Bearer ${accessToken}`,
                 'Content-Type': 'application/json'
@@ -304,6 +306,18 @@ function getAccessToken(clientId, clientSecret) {
     });
 }
 exports.getAccessToken = getAccessToken;
+
+
+/***/ }),
+
+/***/ 8475:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.designAutomationApiBaseUrl = void 0;
+exports.designAutomationApiBaseUrl = 'https://developer.api.autodesk.com/da/us-east/v3';
 
 
 /***/ }),

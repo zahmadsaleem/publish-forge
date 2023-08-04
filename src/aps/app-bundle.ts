@@ -4,6 +4,7 @@ import FormData from 'form-data'
 import fs from 'fs'
 
 import {Inputs} from '../inputs'
+import {designAutomationApiBaseUrl} from './config'
 
 interface AppBundleUpdateResponse {
   version: number
@@ -19,7 +20,7 @@ export async function updateAppBundle(
 ): Promise<AppBundleUpdateResponse> {
   const config = {
     method: 'post',
-    url: `https://developer.api.autodesk.com/da/us-east/v3/appbundles/${inputs.appBundleId}/versions`,
+    url: `${designAutomationApiBaseUrl}/appbundles/${inputs.appBundleId}/versions`,
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${accessToken}`
@@ -32,7 +33,7 @@ export async function updateAppBundle(
 
   const createConfig = {
     method: 'post',
-    url: `https://developer.api.autodesk.com/da/us-east/v3/appbundles`,
+    url: `${designAutomationApiBaseUrl}/appbundles`,
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${accessToken}`
@@ -100,7 +101,7 @@ export async function assignAppBundleAlias(
 ): Promise<void> {
   const config = {
     method: 'patch',
-    url: `https://developer.api.autodesk.com/da/us-east/v3/appbundles/${inputs.appBundleId}/aliases/${inputs.appBundleAlias}`,
+    url: `${designAutomationApiBaseUrl}/appbundles/${inputs.appBundleId}/aliases/${inputs.appBundleAlias}`,
     headers: {
       Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json'
@@ -112,7 +113,7 @@ export async function assignAppBundleAlias(
 
   const createConfig = {
     method: 'post',
-    url: `https://developer.api.autodesk.com/da/us-east/v3/appbundles/${inputs.appBundleId}/aliases`,
+    url: `${designAutomationApiBaseUrl}/appbundles/${inputs.appBundleId}/aliases`,
     headers: {
       Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json'

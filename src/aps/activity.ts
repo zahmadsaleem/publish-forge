@@ -3,6 +3,7 @@ import * as core from '@actions/core'
 import fs from 'fs'
 import axios from 'axios'
 import {Inputs} from '../inputs'
+import {designAutomationApiBaseUrl} from './config'
 
 export async function updateActivities(
   accessToken: string,
@@ -39,14 +40,14 @@ async function updateActivity(
   // delete data.alias
   const createConfig = {
     method: 'post',
-    url: `https://developer.api.autodesk.com/da/us-east/v3/activities`,
+    url: `${designAutomationApiBaseUrl}/activities`,
     headers,
     data: JSON.stringify(copiedActivity)
   }
   delete copiedActivity.id
   const config = {
     method: 'post',
-    url: `https://developer.api.autodesk.com/da/us-east/v3/activities/${activityName}/versions`,
+    url: `${designAutomationApiBaseUrl}/activities/${activityName}/versions`,
     headers,
     data: JSON.stringify(copiedActivity)
   }
