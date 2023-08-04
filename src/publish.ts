@@ -22,17 +22,17 @@ async function getAccessToken(
   clientSecret: string
 ): Promise<string> {
   const data = qs.stringify({
-    client_id: clientId,
-    client_secret: clientSecret,
     grant_type: 'client_credentials',
-    scope:
-      'code:all data:write data:read bucket:create bucket:delete bucket:update'
+    scope: 'code:all'
   })
   const config = {
     method: 'post',
-    url: 'https://developer.api.autodesk.com/authentication/v1/authenticate',
+    url: 'https://developer.api.autodesk.com/authentication/v2/token',
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
+      'Content-Type': 'application/x-www-form-urlencoded',
+      Authorization: `Basic ${Buffer.from(
+        `${clientId}:${clientSecret}`
+      ).toString('base64')}`
     },
     data
   }
