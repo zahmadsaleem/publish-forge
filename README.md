@@ -37,5 +37,5 @@ For example, if the glob pattern is `./testdata/*.activity.json` and the files a
 If set to true, the action will create the appbundle and activities if they do not exist.
 
 TOD0:
-- [x] Allow creating if not exists
-- [ ] Add support for activity aliases
+- [x] Allow creating appbundle, appbundle alias or activity if it doesn't exists
+- [ ] Add support for creating and updating activity aliases
