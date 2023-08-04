@@ -259,6 +259,7 @@ function updateActivities(accessToken, inputs) {
     return __awaiter(this, void 0, void 0, function* () {
         const globber = yield glob.create(inputs.activities);
         const files = yield globber.glob();
+        core.debug(`Found ${files.length} activities, file paths: ${JSON.stringify(files)}`);
         yield Promise.all(files.map((file_path) => __awaiter(this, void 0, void 0, function* () {
             const data = fs_1.default.readFileSync(file_path, 'utf8');
             const activity = JSON.parse(data);

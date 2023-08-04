@@ -183,7 +183,9 @@ async function updateActivities(
 ): Promise<void> {
   const globber = await glob.create(inputs.activities)
   const files = await globber.glob()
-
+  core.debug(
+    `Found ${files.length} activities, file paths: ${JSON.stringify(files)}`
+  )
   await Promise.all(
     files.map(async file_path => {
       const data = fs.readFileSync(file_path, 'utf8')
