@@ -66,10 +66,14 @@ function run() {
         catch (error) {
             if (error instanceof axios_1.AxiosError) {
                 core.setFailed((_a = error.response) === null || _a === void 0 ? void 0 : _a.data);
+                if (error.stack)
+                    core.debug(error.stack);
                 return;
             }
             if (error instanceof Error) {
                 core.setFailed(error.message);
+                if (error.stack)
+                    core.debug(error.stack);
                 return;
             }
             core.setFailed('Unknown error');
@@ -262,6 +266,8 @@ function updateActivities(accessToken, inputs) {
         core.debug(`Found ${files.length} activities, file paths: ${JSON.stringify(files)}`);
         yield Promise.all(files.map((file_path) => __awaiter(this, void 0, void 0, function* () {
             const data = fs_1.default.readFileSync(file_path, 'utf8');
+            core.debug(`Reading activity data from ${file_path}`);
+            core.debug(`Activity data: ${data}`);
             const activity = JSON.parse(data);
             yield updateActivity(activity, inputs.create, accessToken);
         })));

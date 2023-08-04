@@ -189,6 +189,8 @@ async function updateActivities(
   await Promise.all(
     files.map(async file_path => {
       const data = fs.readFileSync(file_path, 'utf8')
+      core.debug(`Reading activity data from ${file_path}`)
+      core.debug(`Activity data: ${data}`)
       const activity = JSON.parse(data)
       await updateActivity(activity, inputs.create, accessToken)
     })
