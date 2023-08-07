@@ -6,8 +6,9 @@ config();
 
 const clientId = process.env.FORGE_CLIENT_ID as string;
 const clientSecret = process.env.FORGE_CLIENT_SECRET as string;
-test("dummy test", async () => {
+test("publish", async () => {
   try {
+
     await publish({
       clientId,
       clientSecret,
@@ -18,13 +19,17 @@ test("dummy test", async () => {
       appBundleAlias: "prod",
       create: true
     });
+
+
+    expect(true).toBeTruthy();
   } catch (error) {
+
     if (error instanceof AxiosError) {
-      console.log(error.response?.data)
-    }
-    else{
+      console.log(error.response?.data);
+    } else {
       console.log(error);
     }
+
+    expect(error).toBeUndefined();
   }
-  expect(true).toBeTruthy();
 });

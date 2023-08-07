@@ -15,6 +15,9 @@ jobs:
           npm install
       - run: |
           npm run all
+        env:
+          FORGE_CLIENT_ID: ${{ secrets.FORGE_CLIENT_ID }}
+          FORGE_CLIENT_SECRET: ${{ secrets.FORGE_CLIENT_SECRET }}
 
   test:
     runs-on: ubuntu-latest
