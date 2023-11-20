@@ -71,6 +71,7 @@ function updateActivity(activity, createIfNotExists, accessToken) {
             'Content-Type': 'application/json'
         };
         const activityName = copiedActivity.id;
+        const activityAlias = copiedActivity.alias;
         // const activityAlias = data.alias
         // delete data.alias
         const createConfig = {
@@ -80,15 +81,22 @@ function updateActivity(activity, createIfNotExists, accessToken) {
             data: JSON.stringify(copiedActivity)
         };
         delete copiedActivity.id;
+        delete copiedActivity.alias;
         const config = {
             method: 'post',
             url: `${config_1.designAutomationApiBaseUrl}/activities/${activityName}/versions`,
             headers,
             data: JSON.stringify(copiedActivity)
         };
+        let versionNumber = 1;
         try {
             core.info(`Updating activity ${activityName}...`);
-            yield (0, axios_1.default)(config);
+            const activityUpdateResponse = yield (0, axios_1.default)(config);
+            versionNumber = activityUpdateResponse.data.version;
+            if (activityAlias === undefined) {
+                return;
+            }
+            yield createOrUpdateActivityAlias(activityName, activityAlias, versionNumber, createIfNotExists, accessToken);
             return;
         }
         catch (err) {
@@ -98,6 +106,47 @@ function updateActivity(activity, createIfNotExists, accessToken) {
             throw new Error(`Activity ${activityName} doesn't exist`);
         }
         core.info(`Activity does not exist, creating activity ${activityName}...`);
+        yield (0, axios_1.default)(createConfig);
+        if (activityAlias === undefined) {
+            return;
+        }
+        yield createOrUpdateActivityAlias(activityName, activityAlias, versionNumber, createIfNotExists, accessToken);
+    });
+}
+function createOrUpdateActivityAlias(activityName, activityAlias, version, createIfNotExists, accessToken) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const headers = {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+        };
+        const config = {
+            method: 'patch',
+            url: `${config_1.designAutomationApiBaseUrl}/activities/${activityName}/aliases/${activityAlias}`,
+            headers,
+            data: JSON.stringify({
+                version
+            })
+        };
+        const createConfig = {
+            method: 'post',
+            url: `${config_1.designAutomationApiBaseUrl}/activities/${activityName}/aliases`,
+            headers,
+            data: JSON.stringify({
+                version: 1,
+                id: activityAlias
+            })
+        };
+        try {
+            yield (0, axios_1.default)(config);
+            return;
+        }
+        catch (err) {
+            //
+        }
+        if (!createIfNotExists) {
+            throw new Error(`Activity alias ${activityAlias} doesn't exist`);
+        }
+        core.info(`Activity alias does not exist, creating activity alias ${activityAlias}...`);
         yield (0, axios_1.default)(createConfig);
     });
 }
