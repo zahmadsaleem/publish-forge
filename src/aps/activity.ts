@@ -36,6 +36,7 @@ async function updateActivity(
     'Content-Type': 'application/json'
   }
   const activityName = copiedActivity.id as unknown as string
+  const activityAlias: string | undefined = copiedActivity.alias
   // const activityAlias = data.alias
   // delete data.alias
   const createConfig = {
@@ -45,15 +46,28 @@ async function updateActivity(
     data: JSON.stringify(copiedActivity)
   }
   delete copiedActivity.id
+  delete copiedActivity.alias
   const config = {
     method: 'post',
     url: `${designAutomationApiBaseUrl}/activities/${activityName}/versions`,
     headers,
     data: JSON.stringify(copiedActivity)
   }
+  let versionNumber = 1
   try {
     core.info(`Updating activity ${activityName}...`)
-    await axios(config)
+    const activityUpdateResponse = await axios(config)
+    versionNumber = activityUpdateResponse.data.version
+    if (activityAlias === undefined) {
+      return
+    }
+    await createOrUpdateActivityAlias(
+      activityName,
+      activityAlias,
+      versionNumber,
+      createIfNotExists,
+      accessToken
+    )
     return
   } catch (err) {
     // todo: check error
@@ -63,5 +77,60 @@ async function updateActivity(
   }
 
   core.info(`Activity does not exist, creating activity ${activityName}...`)
+  await axios(createConfig)
+  if (activityAlias === undefined) {
+    return
+  }
+  await createOrUpdateActivityAlias(
+    activityName,
+    activityAlias,
+    versionNumber,
+    createIfNotExists,
+    accessToken
+  )
+}
+
+async function createOrUpdateActivityAlias(
+  activityName: string,
+  activityAlias: string,
+  version: number,
+  createIfNotExists: boolean,
+  accessToken: string
+): Promise<void> {
+  const headers = {
+    Authorization: `Bearer ${accessToken}`,
+    'Content-Type': 'application/json'
+  }
+  const config = {
+    method: 'patch',
+    url: `${designAutomationApiBaseUrl}/activities/${activityName}/aliases/${activityAlias}`,
+    headers,
+    data: JSON.stringify({
+      version
+    })
+  }
+  const createConfig = {
+    method: 'post',
+    url: `${designAutomationApiBaseUrl}/activities/${activityName}/aliases`,
+    headers,
+    data: JSON.stringify({
+      version: 1,
+      id: activityAlias
+    })
+  }
+  try {
+    await axios(config)
+    return
+  } catch (err) {
+    //
+  }
+
+  if (!createIfNotExists) {
+    throw new Error(`Activity alias ${activityAlias} doesn't exist`)
+  }
+
+  core.info(
+    `Activity alias does not exist, creating activity alias ${activityAlias}...`
+  )
   await axios(createConfig)
 }
