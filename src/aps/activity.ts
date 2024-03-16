@@ -39,7 +39,6 @@ async function updateActivity(
   const activityAlias: string | undefined = copiedActivity.alias
   // const activityAlias = data.alias
   // delete data.alias
-  const existingActivityVersions = await getExistingActivityVersions(activityName);
   const createConfig = {
     method: 'post',
     url: `${designAutomationApiBaseUrl}/activities`,
@@ -56,6 +55,15 @@ async function updateActivity(
   }
   let versionNumber = 1
   try {
+    core.info(`Finding and deleting existing versions of activity: ${activityName}...`)
+    const existingActivityVersions = await getExistingActivityVersions(activityName, accessToken);
+    if(existingActivityVersions.length > 1) {
+      existingActivityVersions.pop();
+      const deletePromises = existingActivityVersions.map(async (version) => {
+        await deleteExistingActivityVersion(activityName, version, accessToken);
+      });
+      await Promise.all(deletePromises);
+    }
     core.info(`Updating activity ${activityName}...`)
     const activityUpdateResponse = await axios(config)
     versionNumber = activityUpdateResponse.data.version
@@ -89,6 +97,36 @@ async function updateActivity(
     createIfNotExists,
     accessToken
   )
+}
+
+async function getExistingActivityVersions(activityName: string, accessToken: string): Promise<number[]> {
+  const headers = {
+    Authorization: `Bearer ${accessToken}`
+  };
+  const config = {
+    method: 'get',
+    url: `${designAutomationApiBaseUrl}/activities/${activityName}/versions`,
+    headers,
+  };
+  const response = await axios(config);
+  return response.data.data;
+}
+
+async function deleteExistingActivityVersion(activityName: string, version: number, accessToken: string): Promise<void> {
+  core.info(`Deleting version: ${version}...`)
+  const headers = {
+    Authorization: `Bearer ${accessToken}`
+  };
+  const config = {
+    method: 'delete',
+    url: `${designAutomationApiBaseUrl}/activities/${activityName}/versions/${version}`,
+    headers,
+  };
+  const response = await axios(config);
+  if(response.status !== 204) {
+    throw new Error(`Failed to delete activity version: ${version} of activity: ${activityName}...`);
+  }
+  return;
 }
 
 async function createOrUpdateActivityAlias(
