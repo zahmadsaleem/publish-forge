@@ -39,6 +39,7 @@ async function updateActivity(
   const activityAlias: string | undefined = copiedActivity.alias
   // const activityAlias = data.alias
   // delete data.alias
+  const existingActivityVersions = await getExistingActivityVersions(activityName);
   const createConfig = {
     method: 'post',
     url: `${designAutomationApiBaseUrl}/activities`,
