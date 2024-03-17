@@ -54,16 +54,8 @@ async function updateActivity(
     data: JSON.stringify(copiedActivity)
   }
   let versionNumber = 1
+  await findAndDeleteExistingActivityVersions(activityName, accessToken)
   try {
-    core.info(`Finding and deleting existing versions of activity: ${activityName}...`)
-    const existingActivityVersions = await getExistingActivityVersions(activityName, accessToken);
-    if(existingActivityVersions.length > 1) {
-      existingActivityVersions.pop();
-      const deletePromises = existingActivityVersions.map(async (version) => {
-        await deleteExistingActivityVersion(activityName, version, accessToken);
-      });
-      await Promise.all(deletePromises);
-    }
     core.info(`Updating activity ${activityName}...`)
     const activityUpdateResponse = await axios(config)
     versionNumber = activityUpdateResponse.data.version
@@ -99,34 +91,70 @@ async function updateActivity(
   )
 }
 
-async function getExistingActivityVersions(activityName: string, accessToken: string): Promise<number[]> {
+async function findAndDeleteExistingActivityVersions(
+  activityName: string,
+  accessToken: string
+): Promise<void> {
+  try {
+    core.info(
+      `Finding and deleting existing versions of activity: ${activityName}...`
+    )
+    const existingActivityVersions = await getExistingActivityVersions(
+      activityName,
+      accessToken
+    )
+    if (existingActivityVersions && existingActivityVersions.length > 1) {
+      existingActivityVersions.pop()
+      const deletePromises = existingActivityVersions.map(async version => {
+        await deleteExistingActivityVersion(activityName, version, accessToken)
+      })
+      await Promise.all(deletePromises)
+    }
+  } catch (error) {
+    /* empty */
+  }
+}
+
+async function getExistingActivityVersions(
+  activityName: string,
+  accessToken: string
+): Promise<number[]> {
   const headers = {
     Authorization: `Bearer ${accessToken}`
-  };
+  }
   const config = {
     method: 'get',
     url: `${designAutomationApiBaseUrl}/activities/${activityName}/versions`,
-    headers,
-  };
-  const response = await axios(config);
-  return response.data.data;
+    headers
+  }
+  const response = await axios(config)
+  if (response.status !== 200) {
+    core.info(`Failed to get existing versions of activity: ${activityName}...`)
+    return []
+  }
+  return response.data.data
 }
 
-async function deleteExistingActivityVersion(activityName: string, version: number, accessToken: string): Promise<void> {
-  core.info(`Deleting version: ${version}...`)
+async function deleteExistingActivityVersion(
+  activityName: string,
+  version: number,
+  accessToken: string
+): Promise<void> {
   const headers = {
     Authorization: `Bearer ${accessToken}`
-  };
+  }
   const config = {
     method: 'delete',
     url: `${designAutomationApiBaseUrl}/activities/${activityName}/versions/${version}`,
-    headers,
-  };
-  const response = await axios(config);
-  if(response.status !== 204) {
-    throw new Error(`Failed to delete activity version: ${version} of activity: ${activityName}...`);
+    headers
   }
-  return;
+  const response = await axios(config)
+  if (response.status !== 204) {
+    core.info(
+      `Failed to delete activity version: ${version} of activity: ${activityName}...`
+    )
+  }
+  core.info(`Deleted version: ${version}...`)
 }
 
 async function createOrUpdateActivityAlias(

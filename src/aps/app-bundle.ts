@@ -44,17 +44,8 @@ export async function updateAppBundle(
       description: inputs.description || ''
     })
   }
-
+  await findAndDeleteExistingAppBundleVersions(inputs.appBundleId, accessToken)
   try {
-    core.info(`Finding and deleting existing versions of AppBundle: ${inputs.appBundleId}...`)
-    const existingAppBundleVersions = await getExistingAppBundleVersions(inputs.appBundleId, accessToken);
-    if(existingAppBundleVersions.length > 1) {
-      existingAppBundleVersions.pop();
-      const deletePromises = existingAppBundleVersions.map(async (version) => {
-        await deleteExistingAppBundleVersion(inputs.appBundleId, version, accessToken);
-      });
-      await Promise.all(deletePromises);
-    }
     const result = await axios(config)
     return result.data
   } catch (error) {
@@ -70,34 +61,70 @@ export async function updateAppBundle(
   return result.data
 }
 
-async function getExistingAppBundleVersions(appBundleId: string, accessToken: string): Promise<number[]> {
+async function findAndDeleteExistingAppBundleVersions(
+  appBundleId: string,
+  accessToken: string
+): Promise<void> {
+  try {
+    core.info(
+      `Finding and deleting existing versions of AppBundle: ${appBundleId}...`
+    )
+    const existingAppBundleVersions = await getExistingAppBundleVersions(
+      appBundleId,
+      accessToken
+    )
+    if (existingAppBundleVersions && existingAppBundleVersions.length > 1) {
+      existingAppBundleVersions.pop()
+      const deletePromises = existingAppBundleVersions.map(async version => {
+        await deleteExistingAppBundleVersion(appBundleId, version, accessToken)
+      })
+      await Promise.all(deletePromises)
+    }
+  } catch (error) {
+    /* empty */
+  }
+}
+
+async function getExistingAppBundleVersions(
+  appBundleId: string,
+  accessToken: string
+): Promise<number[]> {
   const headers = {
     Authorization: `Bearer ${accessToken}`
-  };
+  }
   const config = {
     method: 'get',
     url: `${designAutomationApiBaseUrl}/appbundles/${appBundleId}/versions`,
-    headers,
-  };
-  const response = await axios(config);
-  return response.data.data;
+    headers
+  }
+  const response = await axios(config)
+  if (response.status !== 200) {
+    core.info(`Failed to get existing versions of AppBundle: ${appBundleId}...`)
+    return []
+  }
+  return response.data.data
 }
 
-async function deleteExistingAppBundleVersion(appBundleId: string, version: number, accessToken: string): Promise<void> {
-  core.info(`Deleting version: ${version}...`)
+async function deleteExistingAppBundleVersion(
+  appBundleId: string,
+  version: number,
+  accessToken: string
+): Promise<void> {
   const headers = {
     Authorization: `Bearer ${accessToken}`
-  };
+  }
   const config = {
     method: 'delete',
     url: `${designAutomationApiBaseUrl}/appbundles/${appBundleId}/versions/${version}`,
-    headers,
-  };
-  const response = await axios(config);
-  if(response.status !== 204) {
-    throw new Error(`Failed to delete version: ${version} of AppBundle: ${appBundleId}...`);
+    headers
   }
-  return;
+  const response = await axios(config)
+  if (response.status !== 204) {
+    core.info(
+      `Failed to delete AppBundle version: ${version} of AppBundle: ${appBundleId}...`
+    )
+  }
+  core.info(`Deleted version: ${version}...`)
 }
 
 export async function uploadAppBundle(
