@@ -123,6 +123,7 @@ async function deleteExistingAppBundleVersion(
     core.info(
       `Failed to delete AppBundle version: ${version} of AppBundle: ${appBundleId}...`
     )
+    return
   }
   core.info(`Deleted version: ${version}...`)
 }

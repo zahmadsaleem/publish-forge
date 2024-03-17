@@ -153,6 +153,7 @@ async function deleteExistingActivityVersion(
     core.info(
       `Failed to delete activity version: ${version} of activity: ${activityName}...`
     )
+    return
   }
   core.info(`Deleted version: ${version}...`)
 }
