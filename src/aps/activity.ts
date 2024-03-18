@@ -1,7 +1,7 @@
 import * as glob from '@actions/glob'
 import * as core from '@actions/core'
 import fs from 'fs'
-import axios from 'axios'
+import axios, {AxiosError} from 'axios'
 import {Inputs} from '../inputs'
 import {designAutomationApiBaseUrl} from './config'
 
@@ -111,7 +111,12 @@ async function findAndDeleteExistingActivityVersions(
       await Promise.all(deletePromises)
     }
   } catch (error) {
-    /* empty */
+    const errorMessage = (error as AxiosError)?.response?.data
+      ? ((error as AxiosError)?.response?.data as string)
+      : ''
+    core.info(
+      `Failed to find and delete existing versions of activity: ${activityName} - ${errorMessage}`
+    )
   }
 }
 
@@ -129,7 +134,7 @@ async function getExistingActivityVersions(
   }
   const response = await axios(config)
   if (response.status !== 200) {
-    core.info(`Failed to get existing versions of activity: ${activityName}...`)
+    core.info(`Failed to get existing versions of activity: ${activityName}`)
     return []
   }
   return response.data.data
@@ -140,6 +145,7 @@ async function deleteExistingActivityVersion(
   version: number,
   accessToken: string
 ): Promise<void> {
+  core.info(`Trying to delete version: ${version}...`)
   const headers = {
     Authorization: `Bearer ${accessToken}`
   }
@@ -148,14 +154,18 @@ async function deleteExistingActivityVersion(
     url: `${designAutomationApiBaseUrl}/activities/${activityName}/versions/${version}`,
     headers
   }
-  const response = await axios(config)
-  if (response.status !== 204) {
+  try {
+    await axios(config)
+  } catch (err) {
+    const errorMessage = (err as AxiosError)?.response?.data
+      ? ((err as AxiosError)?.response?.data as string)
+      : ''
     core.info(
-      `Failed to delete activity version: ${version} of activity: ${activityName}...`
+      `Failed to delete activity version: ${version} of activity: ${activityName} - ${errorMessage}`
     )
     return
   }
-  core.info(`Deleted version: ${version}...`)
+  core.info(`Deleted version: ${version}`)
 }
 
 async function createOrUpdateActivityAlias(
