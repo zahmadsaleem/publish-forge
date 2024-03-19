@@ -89,6 +89,7 @@ function updateActivity(activity, createIfNotExists, accessToken) {
             data: JSON.stringify(copiedActivity)
         };
         let versionNumber = 1;
+        yield findAndDeleteExistingActivityVersions(activityName, accessToken);
         try {
             core.info(`Updating activity ${activityName}...`);
             const activityUpdateResponse = yield (0, axios_1.default)(config);
@@ -111,6 +112,71 @@ function updateActivity(activity, createIfNotExists, accessToken) {
             return;
         }
         yield createOrUpdateActivityAlias(activityName, activityAlias, versionNumber, createIfNotExists, accessToken);
+    });
+}
+function findAndDeleteExistingActivityVersions(activityName, accessToken) {
+    var _a, _b;
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            core.info(`Finding and deleting existing versions of activity: ${activityName}...`);
+            const existingActivityVersions = yield getExistingActivityVersions(activityName, accessToken);
+            if (existingActivityVersions && existingActivityVersions.length > 1) {
+                existingActivityVersions.pop();
+                const deletePromises = existingActivityVersions.map((version) => __awaiter(this, void 0, void 0, function* () {
+                    yield deleteExistingActivityVersion(activityName, version, accessToken);
+                }));
+                yield Promise.all(deletePromises);
+            }
+        }
+        catch (error) {
+            const errorMessage = ((_a = error === null || error === void 0 ? void 0 : error.response) === null || _a === void 0 ? void 0 : _a.data)
+                ? (_b = error === null || error === void 0 ? void 0 : error.response) === null || _b === void 0 ? void 0 : _b.data
+                : '';
+            core.info(`Failed to find and delete existing versions of activity: ${activityName} - ${errorMessage}`);
+        }
+    });
+}
+function getExistingActivityVersions(activityName, accessToken) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const headers = {
+            Authorization: `Bearer ${accessToken}`
+        };
+        const config = {
+            method: 'get',
+            url: `${config_1.designAutomationApiBaseUrl}/activities/${activityName}/versions`,
+            headers
+        };
+        const response = yield (0, axios_1.default)(config);
+        if (response.status !== 200) {
+            core.info(`Failed to get existing versions of activity: ${activityName}`);
+            return [];
+        }
+        return response.data.data;
+    });
+}
+function deleteExistingActivityVersion(activityName, version, accessToken) {
+    var _a, _b;
+    return __awaiter(this, void 0, void 0, function* () {
+        core.info(`Trying to delete version: ${version}...`);
+        const headers = {
+            Authorization: `Bearer ${accessToken}`
+        };
+        const config = {
+            method: 'delete',
+            url: `${config_1.designAutomationApiBaseUrl}/activities/${activityName}/versions/${version}`,
+            headers
+        };
+        try {
+            yield (0, axios_1.default)(config);
+        }
+        catch (err) {
+            const errorMessage = ((_a = err === null || err === void 0 ? void 0 : err.response) === null || _a === void 0 ? void 0 : _a.data)
+                ? (_b = err === null || err === void 0 ? void 0 : err.response) === null || _b === void 0 ? void 0 : _b.data
+                : '';
+            core.info(`Failed to delete activity version: ${version} of activity: ${activityName} - ${errorMessage}`);
+            return;
+        }
+        core.info(`Deleted version: ${version}`);
     });
 }
 function createOrUpdateActivityAlias(activityName, activityAlias, version, createIfNotExists, accessToken) {
@@ -228,6 +294,7 @@ function updateAppBundle(inputs, accessToken) {
                 description: inputs.description || ''
             })
         };
+        yield findAndDeleteExistingAppBundleVersions(inputs.appBundleId, accessToken);
         try {
             const result = yield (0, axios_1.default)(config);
             return result.data;
@@ -244,6 +311,71 @@ function updateAppBundle(inputs, accessToken) {
     });
 }
 exports.updateAppBundle = updateAppBundle;
+function findAndDeleteExistingAppBundleVersions(appBundleId, accessToken) {
+    var _a, _b;
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            core.info(`Finding and deleting existing versions of AppBundle: ${appBundleId}...`);
+            const existingAppBundleVersions = yield getExistingAppBundleVersions(appBundleId, accessToken);
+            if (existingAppBundleVersions && existingAppBundleVersions.length > 1) {
+                existingAppBundleVersions.pop();
+                const deletePromises = existingAppBundleVersions.map((version) => __awaiter(this, void 0, void 0, function* () {
+                    yield deleteExistingAppBundleVersion(appBundleId, version, accessToken);
+                }));
+                yield Promise.all(deletePromises);
+            }
+        }
+        catch (error) {
+            const errorMessage = ((_a = error === null || error === void 0 ? void 0 : error.response) === null || _a === void 0 ? void 0 : _a.data)
+                ? (_b = error === null || error === void 0 ? void 0 : error.response) === null || _b === void 0 ? void 0 : _b.data
+                : '';
+            core.info(`Failed to find and delete existing versions of AppBundle: ${appBundleId} - ${errorMessage}`);
+        }
+    });
+}
+function getExistingAppBundleVersions(appBundleId, accessToken) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const headers = {
+            Authorization: `Bearer ${accessToken}`
+        };
+        const config = {
+            method: 'get',
+            url: `${config_1.designAutomationApiBaseUrl}/appbundles/${appBundleId}/versions`,
+            headers
+        };
+        const response = yield (0, axios_1.default)(config);
+        if (response.status !== 200) {
+            core.info(`Failed to get existing versions of AppBundle: ${appBundleId}`);
+            return [];
+        }
+        return response.data.data;
+    });
+}
+function deleteExistingAppBundleVersion(appBundleId, version, accessToken) {
+    var _a, _b;
+    return __awaiter(this, void 0, void 0, function* () {
+        core.info(`Trying to delete version: ${version}...`);
+        const headers = {
+            Authorization: `Bearer ${accessToken}`
+        };
+        const config = {
+            method: 'delete',
+            url: `${config_1.designAutomationApiBaseUrl}/appbundles/${appBundleId}/versions/${version}`,
+            headers
+        };
+        try {
+            yield (0, axios_1.default)(config);
+        }
+        catch (error) {
+            const errorMessage = ((_a = error === null || error === void 0 ? void 0 : error.response) === null || _a === void 0 ? void 0 : _a.data)
+                ? (_b = error === null || error === void 0 ? void 0 : error.response) === null || _b === void 0 ? void 0 : _b.data
+                : '';
+            core.info(`Failed to delete AppBundle version: ${version} of AppBundle: ${appBundleId} - ${errorMessage}`);
+            return;
+        }
+        core.info(`Deleted version: ${version}`);
+    });
+}
 function uploadAppBundle(zipFilePath, formData, uploadUrl) {
     return __awaiter(this, void 0, void 0, function* () {
         const data = new form_data_1.default();
